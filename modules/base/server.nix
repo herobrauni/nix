@@ -29,6 +29,7 @@
   };
   zramSwap.enable = true;
   boot.tmp.cleanOnBoot = true;
+  boot.loader.systemd-boot.enable = false;
   boot.loader.grub.enable = true;
   boot.loader.grub.device = "/dev/vda";
   swapDevices = [
