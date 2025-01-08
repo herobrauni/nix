@@ -8,7 +8,7 @@
     (nixpkgs.outPath + "/nixos/modules/profiles/minimal.nix")
     (nixpkgs.outPath + "/nixos/modules/profiles/headless.nix")
     (nixpkgs.outPath + "/nixos/modules/profiles/perlless.nix")
-    ../../modules/users/brauni.nix
+    ../users/brauni.nix
   ];
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
   # (the default) this is the recommended approach. When using systemd-networkd it's
@@ -31,5 +31,5 @@
   boot.tmp.cleanOnBoot = true;
   boot.loader.systemd-boot.enable = true;
   boot.loader.systemd-boot.configurationLimit = 5;
-  efi.canTouchEfiVariables = true;
+  boot.loader.efi.canTouchEfiVariables = true;
 }
