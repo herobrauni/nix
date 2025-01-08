@@ -17,7 +17,7 @@
         modules = [
           ./hosts/${hostName}/configuration.nix
         ];
-        specialArgs = {inherit inputs;};
+        specialArgs = {inherit inputs nixpkgs;};
       };
   in {
     nixosConfigurations = {
