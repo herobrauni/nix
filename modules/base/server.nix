@@ -29,7 +29,13 @@
   };
   zramSwap.enable = true;
   boot.tmp.cleanOnBoot = true;
-  # boot.loader.systemd-boot.enable = true;
-  # boot.loader.systemd-boot.configurationLimit = 5;
-  # boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader.grub.enable = true;
+  boot.loader.grub.device = "/dev/vda";
+  swapDevices = [
+    {
+      device = "/swapfile";
+      size = 1110;
+    }
+  ];
+  boot.kernelParams = ["console=ttyS0,115200n8" "console=tty0"];
 }
