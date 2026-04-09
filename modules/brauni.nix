@@ -31,7 +31,8 @@
         };
 
         # Persist home-manager state across reboots (for impermanence)
-        home.persistence."/persist/home/brauni" = {
+        # NOTE: impermanence appends the home directory path automatically
+        home.persistence."/persist" = {
           directories = [
             ".ssh"
             ".local/share"
@@ -42,7 +43,6 @@
           files = [
             ".bash_history"
           ];
-          allowOther = true;
         };
       };
   };
