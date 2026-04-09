@@ -83,9 +83,13 @@
           linkConfig.RequiredForOnline = false;
         };
 
-        # ── Bootloader ───────────────────────────────────────────────
-        boot.loader.systemd-boot.enable = true;
+        # ── Bootloader (limine) ───────────────────────────────────────
+        boot.loader.limine = {
+          enable = true;
+          efiSupport = true;
+        };
         boot.loader.efi.canTouchEfiVariables = true;
+        boot.loader.timeout = 5;
 
         # ── Agenix ───────────────────────────────────────────────────
         age.identityPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];

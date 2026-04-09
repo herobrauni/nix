@@ -34,10 +34,14 @@
         # ── Swap ──────────────────────────────────────────────────────
         swapDevices = [{ device = "/swapfile"; size = 77; }];
 
-        # ── Bootloader ────────────────────────────────────────────────
-        boot.loader.systemd-boot.enable = true;
+        # ── Bootloader (limine) ──────────────────────────────────────
+        boot.loader.limine = {
+          enable = true;
+          efiSupport = true;
+        };
         boot.loader.efi.canTouchEfiVariables = true;
         boot.loader.efi.efiSysMountPoint = "/efi";
+        boot.loader.timeout = 5;
         boot.kernelParams = [ "console=ttyS0,115200n8" "console=tty0" ];
 
         # ── Networking ────────────────────────────────────────────────

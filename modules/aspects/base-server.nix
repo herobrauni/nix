@@ -1,4 +1,4 @@
-{ ... }:
+{ lib, ... }:
 {
   # Shared base-server aspect.
   # All servers include this for common configuration.
@@ -12,9 +12,12 @@
           settings = {
             PasswordAuthentication = false;
             KbdInteractiveAuthentication = false;
-            PermitRootLogin = "no";
+            PermitRootLogin = lib.mkDefault "prohibit-password";
           };
         };
+
+        # ── Sudo (wheel needs no password for nixos-rebuild) ──────────
+        security.sudo.wheelNeedsPassword = false;
 
         # ── Firewall ──────────────────────────────────────────────────
         networking.firewall.enable = true;
@@ -43,6 +46,9 @@
               "nix-command"
               "flakes"
             ];
+            # Hosts never build — only substitute from cache
+            max-jobs = 0;
+            trusted-users = [ "root" "@wheel" ];
             substituters = [ "https://cache.nixos.org" "https://brauni.cachix.org" ];
             trusted-public-keys = [
               "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
@@ -56,18 +62,24 @@
           };
         };
 
+        # ── Auto-upgrade nightly, pull from cache, reboot if needed ───
+        system.autoUpgrade = {
+          enable = true;
+          flake = "github:herobrauni/nix";
+          dates = "04:00";
+          randomizedDelaySec = "30min";
+          allowReboot = true;
+          rebootWindow = {
+            lower = "03:00";
+            upper = "05:00";
+          };
+        };
+
         # ── Timezone ─────────────────────────────────────────────────
         time.timeZone = "UTC";
 
         # ── Locale ───────────────────────────────────────────────────
         i18n.defaultLocale = "en_US.UTF-8";
-
-        # ── Automatic upgrades (optional, disabled by default) ────────
-        # system.autoUpgrade = {
-        #   enable = true;
-        #   flake = "github:YOUR-ORG/nix";
-        #   dates = "04:00";
-        # };
       };
   };
 }
