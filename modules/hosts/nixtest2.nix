@@ -31,8 +31,7 @@
           options = [ "fmask=0077" "dmask=0077" ];
         };
 
-        # ── Swap ──────────────────────────────────────────────────────
-        swapDevices = [{ device = "/swapfile"; size = 77; }];
+        # ── Swap (zram only, handled by base-server aspect) ───────
 
         # ── Bootloader (limine) ──────────────────────────────────────
         boot.loader.limine = {
