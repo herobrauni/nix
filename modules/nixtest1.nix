@@ -60,7 +60,9 @@
         # ── Networking ───────────────────────────────────────────────
         networking.hostName = "nixtest1";
 
-        # Use systemd-networkd (reliable on servers)
+        # Use systemd-networkd for reliable server networking
+        networking.useNetworkd = true;
+        networking.useDHCP = false;
         systemd.network.enable = true;
         services.resolved.enable = true;
 

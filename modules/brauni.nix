@@ -25,9 +25,9 @@
 
         programs.git = {
           enable = true;
-          userName = "brauni";
-          # TODO: set your email
-          # userEmail = "you@example.com";
+          # TODO: set your name and email
+          # settings.user.name = "brauni";
+          # settings.user.email = "you@example.com";
         };
 
         # Persist home-manager state across reboots (for impermanence)
