@@ -43,9 +43,11 @@
               "nix-command"
               "flakes"
             ];
-            # TODO: add your cachix cache here once set up
-            # substituters = [ "https://YOUR-CACHE.cachix.org" ];
-            # trusted-public-keys = [ "YOUR-CACHE.cachix.org-1:..." ];
+            substituters = [ "https://cache.nixos.org" "https://brauni.cachix.org" ];
+            trusted-public-keys = [
+              "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+              "brauni.cachix.org-1:AK1gTT3vQZQh2OqWS4rh+DjV9lOlqa834O5pssx2rUw="
+            ];
           };
           gc = {
             automatic = true;
