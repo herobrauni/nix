@@ -46,8 +46,6 @@
               "nix-command"
               "flakes"
             ];
-            # Hosts never build — only substitute from cache
-            max-jobs = 0;
             trusted-users = [ "root" "@wheel" ];
             substituters = [ "https://cache.nixos.org" "https://brauni.cachix.org" ];
             trusted-public-keys = [
