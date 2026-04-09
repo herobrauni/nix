@@ -14,13 +14,12 @@
           inputs.agenix.nixosModules.default
         ];
 
-        # ── Disk layout ──────────────────────────────────────────────
+        # ── Disk layout (OVH VPS: /dev/sda, 15G) ──────────────────────
         disko.devices = {
           disk = {
             main = {
               type = "disk";
-              # Change this to match your actual device (e.g. /dev/sda, /dev/vda)
-              device = "/dev/vda";
+              device = "/dev/sda";
               content = {
                 type = "gpt";
                 partitions = {
@@ -57,23 +56,31 @@
           };
         };
 
-        # ── Networking ───────────────────────────────────────────────
+        # ── Networking (OVH: eth0=private DHCP, eth1=public IPv6) ─────
         networking.hostName = "nixtest1";
 
-        # Use systemd-networkd for reliable server networking
         networking.useNetworkd = true;
         networking.useDHCP = false;
         systemd.network.enable = true;
         services.resolved.enable = true;
 
-        # TODO: adjust to your actual interface name and IP config
-        # Check with `ip link` on the Debian host before migrating.
-        # This is a static example — replace with your actual network config.
+        # eth0: private network (10.10.13.0/24) via DHCP
         systemd.network.networks."10-eth0" = {
           matchConfig.Name = "eth0";
-          address = [ "10.10.13.100/24" ];
-          routes = [ { routeConfig.Gateway = "10.10.13.1"; } ];
+          networkConfig.DHCP = "yes";
+          dhcpV4Config.RouteMetric = 100;
           linkConfig.RequiredForOnline = true;
+        };
+
+        # eth1: public IPv6 via DHCP6
+        systemd.network.networks."20-eth1" = {
+          matchConfig.Name = "eth1";
+          networkConfig.DHCP = "yes";
+          dhcpV6Config = {
+            PrefixDelegationHint = "auto";
+          };
+          networkConfig.IPv6AcceptRA = true;
+          linkConfig.RequiredForOnline = false;
         };
 
         # ── Bootloader ───────────────────────────────────────────────
