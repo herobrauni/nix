@@ -7,7 +7,7 @@
       (den.provides.user-shell "bash")
     ];
 
-    # SSH keys for remote access (needed for nixos-anywhere to work)
+    # SSH keys for remote access
     nixos = {
       users.users.brauni.openssh.authorizedKeys.keys = [
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJmpZL3J2RqRK7ynIgowaZBKzI+EiuCGmwB6l0AxLk1v"
@@ -33,25 +33,10 @@
 
         programs.git = {
           enable = true;
-          # TODO: set your name and email
-          # settings.user.name = "brauni";
-          # settings.user.email = "you@example.com";
         };
 
-        # Persist home-manager state across reboots (for impermanence)
-        # NOTE: impermanence appends the home directory path automatically
-        home.persistence."/persist" = {
-          directories = [
-            ".ssh"
-            ".local/share"
-            ".config"
-            ".cache"
-            ".tmux"
-          ];
-          files = [
-            ".bash_history"
-          ];
-        };
+        # TODO: add home.persistence back once we figure out
+        # conditional HM module imports in den for non-impermanence hosts
       };
   };
 }
