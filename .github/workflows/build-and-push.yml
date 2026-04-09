@@ -32,4 +32,4 @@ jobs:
       - name: Build ${{ matrix.host }}
         run: |
           nix build .#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel
-          cachix push brauni $(readlink result)
+          cachix push brauni $(nix-store -qR $(readlink result))
