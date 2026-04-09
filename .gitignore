@@ -1,0 +1,6 @@
+# Nix build artifacts
+result
+result-*
+
+# Agenix decrypted secrets (never commit these!)
+secrets/*.key
