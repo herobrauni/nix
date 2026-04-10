@@ -20,7 +20,7 @@ jobs:
       - uses: DeterminateSystems/nix-installer-action@e50d5f73bfe71c2dd0aa4218de8f4afa59f8f81d # v16
 
       # Cachix is the binary cache for this repo; no separate GitHub/FlakeHub cache layer needed.
-      - uses: cachix/cachix-action@ad2ddac53f961de1989924296a1f236fcfbaa4fc # v15
+      - uses: cachix/cachix-action@1eb2ef646ac0255473d23a5907ad7b04ce94065c # v17
         with:
           name: brauni
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
