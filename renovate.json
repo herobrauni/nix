@@ -35,6 +35,16 @@
       ]
     },
     {
+      "matchManagers": [
+        "nix"
+      ],
+      "groupName": "nix flake inputs",
+      "labels": [
+        "dependencies",
+        "nix"
+      ]
+    },
+    {
       "matchUpdateTypes": [
         "minor",
         "patch",
