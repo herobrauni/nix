@@ -1,0 +1,49 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommitsDisabled"
+  ],
+  "timezone": "Europe/Berlin",
+  "schedule": [
+    "after 1am and before 5am every day"
+  ],
+  "prHourlyLimit": 0,
+  "prConcurrentLimit": 0,
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": [
+      "after 1am and before 5am every day"
+    ]
+  },
+  "packageRules": [
+    {
+      "matchManagers": [
+        "github-actions",
+        "nix",
+        "dockerfile",
+        "docker-compose",
+        "npm",
+        "pnpm",
+        "yarn",
+        "cargo",
+        "gomod"
+      ],
+      "schedule": [
+        "after 1am and before 5am every day"
+      ]
+    },
+    {
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "pin",
+        "digest",
+        "lockFileMaintenance"
+      ],
+      "automerge": true,
+      "automergeType": "pr"
+    }
+  ]
+}
