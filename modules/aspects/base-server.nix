@@ -35,7 +35,10 @@
           priority = 999;
         };
 
-        # ── Common system packages ────────────────────────────────────
+        # ── Shells / common system packages ───────────────────────────
+        # fish is enabled system-wide so it can be used as a login shell.
+        programs.fish.enable = true;
+
         # Note: jq, ripgrep, curl, wget, etc. are in the user's home.packages
         # to avoid duplication. Only add here what's needed by system services.
         environment.systemPackages = with pkgs; [

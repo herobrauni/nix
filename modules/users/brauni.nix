@@ -3,7 +3,7 @@
   den.aspects.brauni = {
     includes = [
       den.provides.primary-user
-      (den.provides.user-shell "bash")
+      (den.provides.user-shell "fish")
     ];
 
     # SSH keys for remote access
@@ -28,10 +28,12 @@
           tree
         ];
 
+        programs.fish.enable = true;
+
         programs.git = {
           enable = true;
-          userName = "brauni";
-          extraConfig = {
+          settings = {
+            user.name = "brauni";
             init.defaultBranch = "main";
             core.autocrlf = "input";
           };
