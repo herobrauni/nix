@@ -10,7 +10,7 @@
     ];
 
     nixos =
-      { pkgs, ... }:
+      { pkgs, lib, ... }:
       {
         system.stateVersion = "25.11";
 
@@ -63,6 +63,10 @@
 
         # ── Agenix ────────────────────────────────────────────────────
         age.identityPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+        age.secrets.atuin-password = {
+          file = ../../secrets/atuin-password.age;
+          owner = "brauni";
+        };
       };
   };
 }

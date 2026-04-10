@@ -15,7 +15,13 @@
     };
 
     homeManager =
-      { pkgs, ... }:
+      {
+        pkgs,
+        lib,
+        config,
+        osConfig,
+        ...
+      }:
       {
         home.packages = with pkgs; [
           git
@@ -30,6 +36,17 @@
 
         programs.fish.enable = true;
 
+        programs.atuin = {
+          enable = true;
+          enableFishIntegration = true;
+          settings = {
+            auto_sync = true;
+            sync_address = "https://atuin.brauni.dev";
+            sync_frequency = "5m";
+            search_mode = "prefix";
+          };
+        };
+
         programs.git = {
           enable = true;
           settings = {
@@ -41,6 +58,15 @@
 
         # Note: home.persistence is handled by the impermanence aspect,
         # which conditionally adds it only for hosts that include impermanence.
+      }
+      // lib.optionalAttrs (osConfig.age.secrets ? atuin-password) {
+        home.activation.atuinLogin = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+          if ! ${config.programs.atuin.package}/bin/atuin status >/dev/null 2>&1; then
+            $DRY_RUN_CMD ${config.programs.atuin.package}/bin/atuin login \
+              --username brauni \
+              --password "$(cat ${osConfig.age.secrets.atuin-password.path})"
+          fi
+        '';
       };
   };
 }

@@ -17,11 +17,14 @@ let
 
   # Host keys — populate after first deploy:
   # nixtest1 = "ssh-ed25519 AAAA... nixtest1";
+  nixtest2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICfPnNWDINOx2zVBMIzrLMYT+cWzD0TW+kgUjz0q69ls";
 
   # All personal keys (for secrets brauni should be able to decrypt locally)
   personal = [ brauni brauni2 ];
 in
 {
+  "secrets/atuin-password.age".publicKeys = personal ++ [ nixtest2 ];
+
   # Example: uncomment and edit to create your first secret
   # "secrets/nixtest1-example.age".publicKeys = personal ++ [ nixtest1 ];
 }

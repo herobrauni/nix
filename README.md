@@ -50,18 +50,22 @@ nix flake update
 Managed with [agenix](https://github.com/ryantm/agenix). See `secrets.nix` for key declarations.
 
 ```bash
-# Create/edit a secret
-agenix -e secrets/mysecret.age
+# Create/edit a secret without installing agenix permanently
+EDITOR=vim nix run github:ryantm/agenix -- -e secrets/mysecret.age
 
 # Rekey after adding a host key
-agenix --rekey
+EDITOR=vim nix run github:ryantm/agenix -- --rekey
 ```
+
+Important:
+- encrypted `secrets/*.age` files must be tracked by git so flakes include them during evaluation/deploy
+- after creating a new secret, run `git add secrets/<name>.age`
 
 ## Deploying a New Host
 
 1. Add host declaration in `modules/hosts.nix`
 2. Create host aspect in `modules/hosts/newhost.nix`
-3. Add to CI matrix in `.github/workflows/build-and-push.yml`
+3. CI will discover the new host automatically from `nixosConfigurations`
 4. Test with `nix run .#vm -- newhost`
 5. Deploy: `nix run github:nix-community/nixos-anywhere -- --flake .#newhost --target-host root@<ip>`
 6. After first boot: add host SSH key to `secrets.nix` and rekey

@@ -8,11 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        host:
-          - nixtest1
-          - nixtest2
     steps:
       # Pinned to immutable commit SHAs for supply-chain safety.
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -25,8 +20,23 @@ jobs:
           name: brauni
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
 
-      - name: Build and push full closure for ${{ matrix.host }}
+      - name: Build and push full closure for all discovered NixOS hosts
         run: |
-          target='.#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel'
-          nix build "$target"
-          cachix push brauni $(nix path-info --recursive "$target")
+          mapfile -t hosts < <(
+            nix eval --json .#nixosConfigurations --apply 'x: builtins.attrNames x' | jq -r '.[]'
+          )
+
+          if [ "${#hosts[@]}" -eq 0 ]; then
+            echo "No nixosConfigurations found"
+            exit 1
+          fi
+
+          printf 'Discovered hosts: %s\n' "${hosts[*]}"
+
+          targets=()
+          for host in "${hosts[@]}"; do
+            targets+=(".#nixosConfigurations.${host}.config.system.build.toplevel")
+          done
+
+          nix build "${targets[@]}"
+          cachix push brauni $(nix path-info --recursive "${targets[@]}")
