@@ -11,14 +11,21 @@ nix/
 ├── modules/
 │   ├── dendritic.nix            # den + flake-file wiring, input declarations
 │   ├── hosts.nix                # host & user declarations
-│   ├── defaults.nix             # global defaults (stateVersion, HM, mutual-provider)
-│   ├── nixtest1.nix             # host aspect (disko, network, agenix)
-│   ├── brauni.nix               # user aspect (shell, packages, home persistence)
-│   ├── impermanence.nix         # shared tmpfs impermanence aspect
-│   ├── base-server.nix          # shared server config (SSH, firewall, zram, nix gc)
-│   └── vm.nix                   # VM test runner (nix run .#vm)
+│   ├── defaults.nix             # global defaults (HM, mutual-provider)
+│   ├── checks.nix               # flake checks (nixfmt, statix, deadnix)
+│   ├── vm.nix                   # VM test runner (nix run .#vm -- <host>)
+│   ├── hosts/
+│   │   ├── nixtest1.nix         # host aspect (disko, network, agenix, impermanence)
+│   │   └── nixtest2.nix         # host aspect (converted install, no disko)
+│   ├── aspects/
+│   │   ├── base-server.nix      # shared server config (SSH, firewall, zram, nix gc)
+│   │   └── impermanence.nix     # shared tmpfs impermanence aspect + home persistence
+│   └── users/
+│       └── brauni.nix           # user aspect (shell, packages, git config)
 ├── .github/workflows/
 │   └── build-and-push.yml       # GitHub Actions → cachix
+├── .editorconfig
+├── README.md
 └── PLAN.md
 ```
 
@@ -32,11 +39,10 @@ nix/
 - **flake-file** lets you declare inputs in modules; regenerate with `nix run .#write-flake`
 
 ### Tmpfs Impermanence
-- Root `/` is tmpfs (wiped every boot)
+- Root `/` is tmpfs (wiped every boot) — only for hosts that include the impermanence aspect
 - `/persist` is a real ext4 partition (via disko)
 - `/boot` is a 512M EFI partition (via disko)
-- `impermanence.nix` aspect declares what persists: `/var/log`, `/var/lib/nixos`, `/etc/ssh`, `/etc/machine-id`
-- Home persistence in `brauni.nix`: `~/.ssh`, `~/.config`, `~/.local/share`, etc.
+- `impermanence.nix` aspect declares what persists at system and home level
 - `/persist` is mounted in initrd (`neededForBoot = true`)
 
 ### Agenix Secrets
@@ -46,10 +52,9 @@ nix/
 - `/etc/ssh` is persisted via impermanence → keys survive reboots
 
 ### Cachix + GitHub Actions
-- On push to `main`, GitHub Actions builds all hosts and pushes to cachix
+- On push to `main`, GitHub Actions builds all hosts and pushes to cachix (`brauni`)
 - Secret name for GitHub: `CACHIX_AUTH_TOKEN`
 - Workflow: `.github/workflows/build-and-push.yml`
-- **TODO**: Replace `YOUR-CACHE-NAME` with your actual cachix cache name
 
 ### Zram
 - All servers get 50% zram swap via `base-server.nix` aspect
@@ -66,13 +71,13 @@ nix/
 4. Check the network interface name: `ip link` (might not be `eth0`)
 
 ### Step 1: Adjust host config
-Edit `modules/nixtest1.nix`:
+Edit `modules/hosts/nixtest1.nix`:
 - Set `disko.devices.disk.main.device` to the correct disk (e.g. `/dev/sda`)
 - Set the `systemd.network.networks` interface name and IP/gateway to match reality
 
 ### Step 2: Test in VM
 ```bash
-nix run .#vm
+nix run .#vm -- nixtest1
 ```
 This boots a QEMU VM with the nixtest1 config. Verify things look right.
 
@@ -118,21 +123,20 @@ This will:
    ```nix
    den.hosts.x86_64-linux.newhost.users.brauni = {};
    ```
-2. Create `modules/newhost.nix` (copy `nixtest1.nix` as template)
+2. Create `modules/hosts/newhost.nix` (copy `nixtest1.nix` as template)
    - Set hostname, disk device, network config, disko layout
+   - Set `den.default.nixos.system.stateVersion` override if different from global default
 3. Add host to GitHub Actions matrix in `.github/workflows/build-and-push.yml`
-4. Test with `nix run .#vm` (update `vm.nix` to point at new host if desired)
+4. Test with `nix run .#vm -- newhost`
 5. Deploy with `nixos-anywhere`
 6. After first boot: add host SSH key to `secrets.nix`
 
 ---
 
-## TODO (things to fill in before deploying)
+## TODO
 
-- [ ] Replace `YOUR-CACHE-NAME` in `.github/workflows/build-and-push.yml` with your cachix cache name
-- [ ] Add `CACHIX_AUTH_TOKEN` to GitHub repo secrets
-- [ ] Add cachix substituters to `modules/base-server.nix` (uncomment the lines)
 - [ ] Verify disk device name on nixtest1 (`/dev/vda` vs `/dev/sda`)
 - [ ] Verify network interface name on nixtest1 (might not be `eth0`)
-- [ ] Set git username/email in `modules/brauni.nix`
-- [ ] After first deploy: add nixtest1 SSH host key to `secrets.nix`
+- [ ] Add nixtest1 SSH host key to `secrets.nix` after first deploy
+- [ ] Add `CACHIX_AUTH_TOKEN` to GitHub repo secrets
+- [ ] Consider adding brauni email to git config (or agenix secret)

@@ -2,6 +2,8 @@
 {
   # nixtest2 — converted existing NixOS install (no disko, no impermanence).
   # Disk: /dev/sda1=vfat(/efi 100M), /dev/sda2=ext4(/ 14.9G), /swapfile 77M
+  # Intentionally no disko config — this was an in-place conversion,
+  # so filesystems are referenced by UUID from the original install.
   den.aspects.nixtest2 = {
     includes = [
       den.aspects.base-server
@@ -10,6 +12,8 @@
     nixos =
       { pkgs, ... }:
       {
+        system.stateVersion = "25.11";
+
         imports = [
           inputs.agenix.nixosModules.default
         ];
@@ -43,10 +47,19 @@
         boot.loader.timeout = 5;
         boot.kernelParams = [ "console=ttyS0,115200n8" "console=tty0" ];
 
-        # ── Networking ────────────────────────────────────────────────
-        networking.hostName = "nixtest2";
+        # ── Networking (systemd-networkd, consistent with other hosts) ─
+        # hostname is set automatically by den._.hostname from host.hostName
         networking.usePredictableInterfaceNames = false;
-        networking.interfaces.eth0.useDHCP = true;
+        networking.useNetworkd = true;
+        networking.useDHCP = false;
+        systemd.network.enable = true;
+        services.resolved.enable = true;
+
+        systemd.network.networks."10-eth0" = {
+          matchConfig.Name = "eth0";
+          networkConfig.DHCP = "yes";
+          linkConfig.RequiredForOnline = true;
+        };
 
         # ── Agenix ────────────────────────────────────────────────────
         age.identityPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];

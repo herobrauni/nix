@@ -9,6 +9,8 @@
     nixos =
       { pkgs, ... }:
       {
+        system.stateVersion = "25.11";
+
         imports = [
           inputs.disko.nixosModules.disko
           inputs.agenix.nixosModules.default
@@ -57,7 +59,7 @@
         };
 
         # ── Networking (OVH: eth0=private DHCP, eth1=public IPv6) ─────
-        networking.hostName = "nixtest1";
+        # hostname is set automatically by den._.hostname from host.hostName
 
         networking.useNetworkd = true;
         networking.useDHCP = false;
@@ -95,10 +97,7 @@
         age.identityPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
 
         # ── Host-specific packages ───────────────────────────────────
-        environment.systemPackages = with pkgs; [
-          curl
-          wget
-        ];
+        # curl, wget are in brauni's home.packages — no need to duplicate here
       };
   };
 }

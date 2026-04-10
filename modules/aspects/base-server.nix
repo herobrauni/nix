@@ -13,6 +13,10 @@
             PasswordAuthentication = false;
             KbdInteractiveAuthentication = false;
             PermitRootLogin = lib.mkDefault "prohibit-password";
+            X11Forwarding = false;
+            MaxAuthTries = 3;
+            ClientAliveInterval = 300;
+            ClientAliveCountMax = 2;
           };
         };
 
@@ -32,10 +36,10 @@
         };
 
         # ── Common system packages ────────────────────────────────────
+        # Note: jq, ripgrep, curl, wget, etc. are in the user's home.packages
+        # to avoid duplication. Only add here what's needed by system services.
         environment.systemPackages = with pkgs; [
           openssh
-          jq
-          ripgrep
         ];
 
         # ── Nix settings ─────────────────────────────────────────────

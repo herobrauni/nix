@@ -17,10 +17,12 @@
             "/var/log"
             "/var/lib/nixos"
             "/var/lib/systemd"
+            "/var/lib/acme"
             "/etc/ssh"
           ];
           files = [
             "/etc/machine-id"
+            "/etc/adjtime"
           ];
         };
 
@@ -28,6 +30,26 @@
         boot.initrd.postDeviceCommands = ''
           mkdir -p /mnt-root/persist
         '';
+      };
+
+    # Home-level persistence for all users on impermanence hosts.
+    # This lives here (not in the user aspect) so it's only active
+    # when the impermanence HM module is available.
+    homeManager =
+      { pkgs, ... }:
+      {
+        home.persistence."/persist/home" = {
+          allowOther = true;
+          directories = [
+            ".ssh"
+            ".config"
+            ".local/share"
+            ".cache"
+          ];
+          files = [
+            ".bash_history"
+          ];
+        };
       };
   };
 }

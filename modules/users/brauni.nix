@@ -2,7 +2,6 @@
 {
   den.aspects.brauni = {
     includes = [
-      den.provides.define-user
       den.provides.primary-user
       (den.provides.user-shell "bash")
     ];
@@ -25,18 +24,21 @@
           tmux
           curl
           wget
-          jq
-          ripgrep
           fd
           tree
         ];
 
         programs.git = {
           enable = true;
+          userName = "brauni";
+          extraConfig = {
+            init.defaultBranch = "main";
+            core.autocrlf = "input";
+          };
         };
 
-        # TODO: add home.persistence back once we figure out
-        # conditional HM module imports in den for non-impermanence hosts
+        # Note: home.persistence is handled by the impermanence aspect,
+        # which conditionally adds it only for hosts that include impermanence.
       };
   };
 }
