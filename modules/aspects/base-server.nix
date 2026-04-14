@@ -39,12 +39,16 @@
         # fish is enabled system-wide so it can be used as a login shell.
         programs.fish.enable = true;
 
-        # Note: jq, ripgrep, curl, wget, etc. are in the user's home.packages
-        # to avoid duplication. Only add here what's needed by system services
-        # and admin access on headless servers.
+        # Baseline admin toolkit for headless servers.
         environment.systemPackages = with pkgs; [
           openssh
+          curl
+          wget
           git
+          htop
+          btop
+          jq
+          ripgrep
         ];
 
         # ── Nix settings ─────────────────────────────────────────────
@@ -55,8 +59,14 @@
               "nix-command"
               "flakes"
             ];
-            trusted-users = [ "root" "@wheel" ];
-            substituters = [ "https://cache.nixos.org" "https://brauni.cachix.org" ];
+            trusted-users = [
+              "root"
+              "@wheel"
+            ];
+            substituters = [
+              "https://cache.nixos.org"
+              "https://brauni.cachix.org"
+            ];
             trusted-public-keys = [
               "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
               "brauni.cachix.org-1:AK1gTT3vQZQh2OqWS4rh+DjV9lOlqa834O5pssx2rUw="

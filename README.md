@@ -70,6 +70,11 @@ Important:
 5. Deploy: `nix run github:nix-community/nixos-anywhere -- --flake .#newhost --target-host root@<ip>`
 6. After first boot: add host SSH key to `secrets.nix` and rekey
 
+## Host Notes
+
+- `nixos2` currently uses DHCP via `systemd-networkd` and is presently reachable at `10.178.76.46`.
+  Treat this as operational documentation, not a permanent assignment — the lease may change unless reserved upstream.
+
 ## CI
 
 GitHub Actions builds all hosts on push to `main` and pushes closures to [cachix](https://cachix.org). Servers pull from cachix during `system.autoUpgrade`.
