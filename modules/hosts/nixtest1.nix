@@ -13,7 +13,6 @@
 
         imports = [
           inputs.disko.nixosModules.disko
-          inputs.agenix.nixosModules.default
         ];
 
         # ── Disk layout (OVH VPS: /dev/sda, 15G) ──────────────────────
@@ -92,9 +91,6 @@
         };
         boot.loader.efi.canTouchEfiVariables = true;
         boot.loader.timeout = 5;
-
-        # ── Agenix ───────────────────────────────────────────────────
-        age.identityPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
 
         # ── Host-specific packages ───────────────────────────────────
         # curl, wget are in brauni's home.packages — no need to duplicate here

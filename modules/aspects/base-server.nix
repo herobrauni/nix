@@ -40,9 +40,11 @@
         programs.fish.enable = true;
 
         # Note: jq, ripgrep, curl, wget, etc. are in the user's home.packages
-        # to avoid duplication. Only add here what's needed by system services.
+        # to avoid duplication. Only add here what's needed by system services
+        # and admin access on headless servers.
         environment.systemPackages = with pkgs; [
           openssh
+          git
         ];
 
         # ── Nix settings ─────────────────────────────────────────────

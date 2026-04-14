@@ -14,9 +14,7 @@
       {
         system.stateVersion = "25.11";
 
-        imports = [
-          inputs.agenix.nixosModules.default
-        ];
+        imports = [ ];
 
         # ── Hardware ──────────────────────────────────────────────────
         boot.initrd.availableKernelModules = [
@@ -61,8 +59,7 @@
           linkConfig.RequiredForOnline = true;
         };
 
-        # ── Agenix ────────────────────────────────────────────────────
-        age.identityPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+        # ── Agenix secrets ────────────────────────────────────────────
         age.secrets.atuin-password = {
           file = ../../secrets/atuin-password.age;
           owner = "brauni";
