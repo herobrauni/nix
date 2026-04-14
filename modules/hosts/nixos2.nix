@@ -92,6 +92,7 @@
           mode = "0400";
         };
 
+        users.mutableUsers = false;
         users.users.root.hashedPasswordFile = config.age.secrets.root-password-hash.path;
 
         # ── Cache-first rebuilds on the host ──────────────────────────
