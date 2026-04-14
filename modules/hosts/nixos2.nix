@@ -101,7 +101,7 @@
       ];
 
       environment.persistence."/persist" = {
-        files = lib.mkForce [ "/etc/adjtime" ];
+        files = lib.mkForce [ ];
         directories = [ "/root" ];
       };
     };
