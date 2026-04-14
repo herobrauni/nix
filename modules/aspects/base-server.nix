@@ -49,6 +49,11 @@
           btop
           jq
           ripgrep
+          fd
+          tree
+          tmux
+          ncdu
+          zellij
         ];
 
         # ── Nix settings ─────────────────────────────────────────────
