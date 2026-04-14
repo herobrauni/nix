@@ -1,4 +1,4 @@
-{ den, ... }:
+{ den, lib, ... }:
 {
   # nixos2 — repo-managed VM at 10.178.76.45.
   # Existing in-place NixOS install converted to this flake configuration.
@@ -40,18 +40,30 @@
       boot.loader.efi.efiSysMountPoint = "/efi";
       boot.kernelParams = [ "console=ttyS0,115200n8" "console=tty0" ];
 
-      # ── Networking (keep the VM's working DHCP setup) ─────────────
-      # systemd-networkd changed the DHCP lease from .45 to .46 on first
-      # switch, which made the VM appear unreachable. Keep the existing
-      # NetworkManager-based DHCP setup for this host.
+      # ── Networking (systemd-networkd) ─────────────────────────────
       networking.usePredictableInterfaceNames = false;
-      networking.interfaces.eth0.useDHCP = true;
-      networking.networkmanager.enable = true;
+      networking.useNetworkd = true;
+      networking.useDHCP = false;
+      networking.useHostResolvConf = false;
+      networking.networkmanager.enable = lib.mkForce false;
+      systemd.network.enable = true;
+      services.resolved.enable = true;
 
-      # ── Cache-only rebuilds on the host ───────────────────────────
+      systemd.network.networks."10-eth0" = {
+        matchConfig.Name = "eth0";
+        networkConfig = {
+          DHCP = "yes";
+          IPv6AcceptRA = true;
+        };
+        linkConfig.RequiredForOnline = true;
+      };
+
+      # ── Cache-first rebuilds on the host ──────────────────────────
+      # Minimal compromise: allow a single local build job so Home Manager
+      # can realize user profiles, while auto-upgrades stay cache-only.
       nix.settings = {
         fallback = false;
-        max-jobs = 0;
+        max-jobs = 1;
       };
 
       system.autoUpgrade.flags = [
