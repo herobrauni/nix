@@ -40,22 +40,13 @@
       boot.loader.efi.efiSysMountPoint = "/efi";
       boot.kernelParams = [ "console=ttyS0,115200n8" "console=tty0" ];
 
-      # ── Networking (systemd-networkd) ─────────────────────────────
+      # ── Networking (keep the VM's working DHCP setup) ─────────────
+      # systemd-networkd changed the DHCP lease from .45 to .46 on first
+      # switch, which made the VM appear unreachable. Keep the existing
+      # NetworkManager-based DHCP setup for this host.
       networking.usePredictableInterfaceNames = false;
-      networking.useNetworkd = true;
-      networking.useDHCP = false;
-      networking.useHostResolvConf = false;
-      systemd.network.enable = true;
-      services.resolved.enable = true;
-
-      systemd.network.networks."10-eth0" = {
-        matchConfig.Name = "eth0";
-        networkConfig = {
-          DHCP = "yes";
-          IPv6AcceptRA = true;
-        };
-        linkConfig.RequiredForOnline = true;
-      };
+      networking.interfaces.eth0.useDHCP = true;
+      networking.networkmanager.enable = true;
 
       # ── Cache-only rebuilds on the host ───────────────────────────
       nix.settings = {
