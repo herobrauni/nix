@@ -26,6 +26,7 @@ let
 in
 {
   "secrets/atuin-password.age".publicKeys = personal ++ [ nixtest2 ];
+  "secrets/root-password-hash.age".publicKeys = personal ++ [ nixos2 ];
 
   # Example: uncomment and edit to create your first secret
   # "secrets/nixtest1-example.age".publicKeys = personal ++ [ nixtest1 ];
