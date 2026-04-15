@@ -8,7 +8,7 @@
 #   agenix --rekey
 #
 # Host keys will be populated after first deploy.
-# Run `ssh-keyscan nixtest1` and add the ed25519 key below.
+# Run `ssh-keyscan <host>` and add the ed25519 key below.
 
 let
   # brauni's personal keys (from https://github.com/herobrauni.keys)
@@ -16,11 +16,9 @@ let
   brauni2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFfL/A140RdlJ1LQQR/lwtPwf0MAn5haqDdXGKWsW8sa";
 
   # Host keys — populate after first deploy:
-  # nixtest1 = "ssh-ed25519 AAAA... nixtest1";
-  nixtest2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICfPnNWDINOx2zVBMIzrLMYT+cWzD0TW+kgUjz0q69ls";
   nixos = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAig9U9QbDqK+pOklbYOni1MaMTbZALGAvV1L98OzqD0 root@nixos";
   nixos2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBzHy4LmBrl2Cqv2JTKLjhX+JECcaZePx9saKWhA1rGK root@nixos";
-  gigahost1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEJ7g5Q/8CWfouOejmzARS1wwKhvtlNoLv8xbycS8caq root@nixos";
+  gigahost1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP4zTijNoKXYhh3Qc8gFcq/r9D5pA3QKPH4hZ5gnAwz4";
 
   # All personal keys (for secrets brauni should be able to decrypt locally)
   personal = [
@@ -29,9 +27,9 @@ let
   ];
 in
 {
-  "secrets/atuin-password.age".publicKeys = personal ++ [ nixtest2 ];
+  "secrets/atuin-password.age".publicKeys = personal ++ [ nixos ];
   "secrets/root-password-hash.age".publicKeys = personal ++ [ nixos2 ];
 
   # Example: uncomment and edit to create your first secret
-  # "secrets/nixtest1-example.age".publicKeys = personal ++ [ nixtest1 ];
+  # "secrets/example.age".publicKeys = personal ++ [ nixos ];
 }

@@ -4,6 +4,10 @@
 > Den is an aspect-oriented, context-driven Dendritic Nix configuration framework.
 > Read this document fully before generating any Den configuration.
 >
+> **Repo note:** In this repository, prefer **Limine** as the NixOS bootloader.
+> For EFI hosts, reuse `modules/aspects/boot-limine-efi.nix` where possible.
+> For BIOS-only hosts, reuse `modules/aspects/boot-limine-bios.nix` and explicitly set the install device per-host.
+>
 > **Note:** All file paths in this document (`docs/src/content/docs/`, `nix/lib/`, `modules/`,
 > `templates/ci/modules/`, etc.) refer to the [Den framework](https://github.com/vic/den) source tree,
 > **not this repository**. To consult Den source locally, resolve the flake input:

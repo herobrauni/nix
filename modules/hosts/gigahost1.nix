@@ -1,12 +1,17 @@
-{ den, ... }:
+{ inputs, den, ... }:
 {
   # gigahost1 — VPS at 185.125.169.63, converted from a fresh reinstall.
   den.aspects.gigahost1 = {
     includes = [
       den.aspects.base-server
+      den.aspects.boot-limine-bios
     ];
 
     nixos = {
+      imports = [
+        inputs.disko.nixosModules.disko
+      ];
+
       system.stateVersion = "25.11";
 
       # ── Hardware ──────────────────────────────────────────────────
@@ -22,15 +27,45 @@
       ];
       boot.kernelModules = [ "kvm-amd" ];
 
-      # ── Filesystems (match existing install) ─────────────────────
-      fileSystems."/" = {
-        device = "/dev/disk/by-uuid/295f1e7f-4e29-4230-be0b-22ddf6bdce78";
-        fsType = "ext4";
+      # ── Disk layout (destructive reinstall via disko) ────────────
+      disko.devices = {
+        disk.main = {
+          type = "disk";
+          device = "/dev/sda";
+          content = {
+            type = "gpt";
+            partitions = {
+              bios = {
+                size = "1M";
+                type = "EF02";
+                attributes = [ 0 ];
+              };
+              boot = {
+                size = "512M";
+                type = "EF00";
+                content = {
+                  type = "filesystem";
+                  format = "vfat";
+                  mountpoint = "/boot";
+                  mountOptions = [ "umask=0077" ];
+                };
+              };
+              root = {
+                size = "100%";
+                content = {
+                  type = "filesystem";
+                  format = "ext4";
+                  mountpoint = "/";
+                };
+              };
+            };
+          };
+        };
       };
 
-      # ── Bootloader ────────────────────────────────────────────────
-      boot.loader.grub.enable = true;
-      boot.loader.grub.device = "/dev/sda";
+      # ── Bootloader (limine, BIOS install to /dev/sda) ─────────────
+      boot.loader.limine.biosDevice = "/dev/sda";
+      boot.loader.limine.partitionIndex = 1;
       boot.kernelParams = [ "console=tty0" ];
 
       # ── Networking (systemd-networkd, static IPv4/IPv6) ──────────

@@ -1,6 +1,6 @@
 # NixOS Fleet Management — Implementation Plan
 
-## Repo Structure (as built)
+## Repo Structure (current)
 
 ```
 nix/
@@ -15,128 +15,90 @@ nix/
 │   ├── checks.nix               # flake checks (nixfmt, statix, deadnix)
 │   ├── vm.nix                   # VM test runner (nix run .#vm -- <host>)
 │   ├── hosts/
-│   │   ├── nixtest1.nix         # host aspect (disko, network, agenix, impermanence)
-│   │   └── nixtest2.nix         # host aspect (converted install, no disko)
+│   │   ├── gigahost1.nix
+│   │   ├── nixos.nix
+│   │   └── nixos2.nix
 │   ├── aspects/
-│   │   ├── base-server.nix      # shared server config (SSH, firewall, zram, nix gc)
-│   │   └── impermanence.nix     # shared tmpfs impermanence aspect + home persistence
+│   │   ├── base-server.nix
+│   │   ├── boot-limine-bios.nix
+│   │   ├── boot-limine-efi.nix
+│   │   └── impermanence.nix
 │   └── users/
-│       └── brauni.nix           # user aspect (shell, packages, git config)
+│       └── brauni.nix
 ├── .github/workflows/
-│   └── build-and-push.yml       # GitHub Actions → cachix
+│   └── build-and-push.yml
 ├── .editorconfig
 ├── README.md
 └── PLAN.md
 ```
 
+## Current Host Set
+
+- `nixos` — current local/VM-ish host used for repo testing
+- `nixos2` — repo-managed host using Limine EFI and `/efi`
+- `gigahost1` — remote host using Limine BIOS on `/dev/sda`
+
 ## Architecture
 
 ### Den Pattern
-- **Flake-parts** + **import-tree** auto-loads all `.nix` files in `modules/`
-- **Host declarations** in `hosts.nix` → den generates `nixosConfigurations` automatically
+- **Flake-parts** + **import-tree** auto-load all `.nix` files in `modules/`
+- **Host declarations** in `modules/hosts.nix` generate `nixosConfigurations`
 - **Aspects** are reusable config bundles included by hosts via `includes`
-- **Home-Manager** integrated as NixOS module (atomic system+home rebuilds)
-- **flake-file** lets you declare inputs in modules; regenerate with `nix run .#write-flake`
+- **Home Manager** is integrated as a NixOS module for atomic system+home rebuilds
+- **flake-file** lets inputs live in modules; regenerate with `nix run .#write-flake`
+
+### Bootloader Layout
+- Fleet preference is **Limine**
+- EFI hosts should include `den.aspects.boot-limine-efi`
+- BIOS hosts should include `den.aspects.boot-limine-bios`
+- Host-specific boot details stay local to the host:
+  - EFI mountpoint, e.g. `boot.loader.efi.efiSysMountPoint = "/efi";`
+  - BIOS install disk, e.g. `boot.loader.limine.biosDevice = "/dev/sda";`
 
 ### Tmpfs Impermanence
-- Root `/` is tmpfs (wiped every boot) — only for hosts that include the impermanence aspect
-- `/persist` is a real ext4 partition (via disko)
-- `/boot` is a 512M EFI partition (via disko)
-- `impermanence.nix` aspect declares what persists at system and home level
-- `/persist` is mounted in initrd (`neededForBoot = true`)
+- Only hosts that include `impermanence` get tmpfs `/`
+- Persistent state lives in `/persist`
+- `impermanence.nix` defines system and home persistence
 
 ### Agenix Secrets
-- `secrets.nix` at repo root maps `.age` files to authorized public keys
-- Encrypted to: brauni's personal SSH keys + host SSH keys (added after deploy)
+- `secrets.nix` maps `.age` files to authorized public keys
+- Secrets are encrypted to brauni's personal keys plus the relevant host keys
 - Hosts decrypt at activation using `/etc/ssh/ssh_host_ed25519_key`
-- `/etc/ssh` is persisted via impermanence → keys survive reboots
 
 ### Cachix + GitHub Actions
 - On push to `main`, GitHub Actions builds all hosts and pushes to cachix (`brauni`)
 - Secret name for GitHub: `CACHIX_AUTH_TOKEN`
 - Workflow: `.github/workflows/build-and-push.yml`
 
-### Zram
-- All servers get 50% zram swap via `base-server.nix` aspect
-- Algorithm: zstd, priority 999 (preferred over disk swap)
+## Operational Notes
 
----
-
-## Migration: Debian → NixOS (nixtest1)
-
-### Before you begin
-1. **Back up anything important** off-server
-2. Ensure SSH access works: `ssh brauni@10.10.13.100` (with sudo) or `ssh root@10.10.13.100`
-3. Check the disk device name on the Debian host: `lsblk` (likely `/dev/vda` or `/dev/sda`)
-4. Check the network interface name: `ip link` (might not be `eth0`)
-
-### Step 1: Adjust host config
-Edit `modules/hosts/nixtest1.nix`:
-- Set `disko.devices.disk.main.device` to the correct disk (e.g. `/dev/sda`)
-- Set the `systemd.network.networks` interface name and IP/gateway to match reality
-
-### Step 2: Test in VM
+### Build a host
 ```bash
-nix run .#vm -- nixtest1
-```
-This boots a QEMU VM with the nixtest1 config. Verify things look right.
-
-### Step 3: Build the closure
-```bash
-nix build .#nixosConfigurations.nixtest1.config.system.build.toplevel
+nix build .#nixosConfigurations.nixos.config.system.build.toplevel
+nix build .#nixosConfigurations.nixos2.config.system.build.toplevel
+nix build .#nixosConfigurations.gigahost1.config.system.build.toplevel
 ```
 
-### Step 4: Install via nixos-anywhere
-
-If SSHing as brauni (with sudo):
+### Test a host in a VM
 ```bash
-nix run github:nix-community/nixos-anywhere \
-  -- --flake .#nixtest1 --target-host brauni@10.10.13.100 --sudo
+nix run .#vm
+nix run .#vm -- nixos2
 ```
 
-If SSHing as root:
+### Deploy a host
 ```bash
-nix run github:nix-community/nixos-anywhere \
-  -- --flake .#nixtest1 --target-host root@10.10.13.100
+nix run github:nix-community/nixos-anywhere -- --flake .#<host> --target-host root@<ip>
 ```
 
-This will:
-1. SSH into the Debian machine
-2. kexec into a NixOS installer environment
-3. Run disko to partition/format the disk (**DESTROYS ALL DATA**)
-4. Install the NixOS closure
-5. Reboot into NixOS
-
-### Step 5: Post-install
-1. SSH into the new NixOS machine
-2. Get the host SSH public key: `cat /etc/ssh/ssh_host_ed25519_key.pub`
-3. Add it to `secrets.nix` under `nixtest1`
-4. Create any needed secrets: `agenix -e secrets/some-secret.age`
-5. Rekey: `agenix --rekey`
-6. Commit and push
-
----
-
-## Adding a New Host (checklist)
-
-1. Add host declaration in `modules/hosts.nix`:
-   ```nix
-   den.hosts.x86_64-linux.newhost.users.brauni = {};
-   ```
-2. Create `modules/hosts/newhost.nix` (copy `nixtest1.nix` as template)
-   - Set hostname, disk device, network config, disko layout
-   - Set `den.default.nixos.system.stateVersion` override if different from global default
-3. Add host to GitHub Actions matrix in `.github/workflows/build-and-push.yml`
-4. Test with `nix run .#vm -- newhost`
-5. Deploy with `nixos-anywhere`
-6. After first boot: add host SSH key to `secrets.nix`
-
----
+### Post-deploy checklist
+1. Confirm the machine boots again
+2. Confirm SSH access works
+3. Record the host SSH key in `secrets.nix`
+4. Rekey secrets if needed: `agenix --rekey`
+5. Commit and push
 
 ## TODO
 
-- [ ] Verify disk device name on nixtest1 (`/dev/vda` vs `/dev/sda`)
-- [ ] Verify network interface name on nixtest1 (might not be `eth0`)
-- [ ] Add nixtest1 SSH host key to `secrets.nix` after first deploy
-- [ ] Add `CACHIX_AUTH_TOKEN` to GitHub repo secrets
-- [ ] Consider adding brauni email to git config (or agenix secret)
+- [ ] Remove or refresh any remaining stale host references outside active docs
+- [ ] Add `CACHIX_AUTH_TOKEN` to GitHub repo secrets if not already present
+- [ ] Consider adding a dedicated deploy helper for active hosts

@@ -19,6 +19,8 @@ This repo uses the **dendritic** pattern from `den` + `flake-file`:
 Aspects are composable config bundles. Hosts include them via `den.aspects.*`:
 
 - **`base-server`** — SSH, firewall, zram swap, nix settings, auto-upgrade
+- **`boot-limine-efi`** — shared Limine defaults for EFI hosts
+- **`boot-limine-bios`** — shared Limine defaults for BIOS hosts
 - **`impermanence`** — tmpfs root with persistent `/persist` (only for hosts that want it)
 
 ### Impermanence
@@ -29,11 +31,11 @@ Hosts that include the `impermanence` aspect get a tmpfs root wiped on every boo
 
 ```bash
 # Build a host
-nix build .#nixosConfigurations.nixtest1.config.system.build.toplevel
+nix build .#nixosConfigurations.nixos2.config.system.build.toplevel
 
-# Test a host in a VM (defaults to nixtest1)
+# Test a host in a VM (defaults to nixos)
 nix run .#vm
-nix run .#vm -- nixtest2
+nix run .#vm -- nixos2
 
 # Run flake checks (formatting + linting)
 nix flake check
@@ -72,8 +74,13 @@ Important:
 
 ## Host Notes
 
-- `nixos2` currently uses DHCP via `systemd-networkd` and is presently reachable at `10.178.76.46`.
-  Treat this as operational documentation, not a permanent assignment — the lease may change unless reserved upstream.
+- Bootloader policy: prefer **Limine** across the fleet.
+  - EFI hosts should generally include `den.aspects.boot-limine-efi`.
+  - BIOS-only hosts should generally include `den.aspects.boot-limine-bios` and set the install device per-host.
+- `nixos2` uses Limine with `/efi` as its EFI system partition and is configured with static IPv4 `10.178.76.45/24` via `systemd-networkd`.
+  Default gateway is `10.178.76.1`.
+- `gigahost1` is configured for Limine in BIOS mode, installed to `/dev/sda`.
+  Because this is a remote VPS and not EFI, treat bootloader changes here as higher-risk than the EFI hosts.
 
 ## CI
 

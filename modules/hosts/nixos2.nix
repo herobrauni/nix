@@ -5,6 +5,7 @@
   den.aspects.nixos2 = {
     includes = [
       den.aspects.base-server
+      den.aspects.boot-limine-efi
       den.aspects.impermanence
     ];
 
@@ -56,8 +57,6 @@
         };
 
         # ── Bootloader ────────────────────────────────────────────────
-        boot.loader.systemd-boot.enable = true;
-        boot.loader.efi.canTouchEfiVariables = true;
         boot.loader.efi.efiSysMountPoint = "/efi";
         boot.kernelParams = [
           "console=ttyS0,115200n8"
@@ -78,8 +77,17 @@
 
         systemd.network.networks."10-eth0" = {
           matchConfig.Name = "eth0";
+          address = [ "10.178.76.45/24" ];
+          routes = [
+            {
+              Gateway = "10.178.76.1";
+            }
+          ];
           networkConfig = {
-            DHCP = "yes";
+            DNS = [
+              "1.1.1.1"
+              "8.8.8.8"
+            ];
             IPv6AcceptRA = true;
           };
           linkConfig.RequiredForOnline = true;

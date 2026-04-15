@@ -1,12 +1,12 @@
 { inputs, den, ... }:
 {
-  den.aspects.nixtest1.includes = [ (den.provides.tty-autologin "brauni") ];
+  den.aspects.nixos.includes = [ (den.provides.tty-autologin "brauni") ];
 
   perSystem =
     { pkgs, lib, ... }:
     {
-      # Run any host in a VM: nix run .#vm -- nixtest1
-      # Defaults to nixtest1 if no argument is given.
+      # Run any host in a VM: nix run .#vm -- nixos
+      # Defaults to nixos if no argument is given.
       packages.vm = pkgs.writeShellApplication {
         name = "vm";
         text =
@@ -15,7 +15,7 @@
             # Build a helper script that can resolve any host dynamically
           in
           ''
-            host="''${1:-nixtest1}"
+            host="''${1:-nixos}"
             shift 2>/dev/null || true
             config="${inputs.self}#nixosConfigurations.$host.config"
             hostname=$(nix eval --raw "$config.networking.hostName")
