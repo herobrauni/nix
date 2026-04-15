@@ -20,9 +20,13 @@ let
   nixtest2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICfPnNWDINOx2zVBMIzrLMYT+cWzD0TW+kgUjz0q69ls";
   nixos = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAig9U9QbDqK+pOklbYOni1MaMTbZALGAvV1L98OzqD0 root@nixos";
   nixos2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBzHy4LmBrl2Cqv2JTKLjhX+JECcaZePx9saKWhA1rGK root@nixos";
+  gigahost1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEJ7g5Q/8CWfouOejmzARS1wwKhvtlNoLv8xbycS8caq root@nixos";
 
   # All personal keys (for secrets brauni should be able to decrypt locally)
-  personal = [ brauni brauni2 ];
+  personal = [
+    brauni
+    brauni2
+  ];
 in
 {
   "secrets/atuin-password.age".publicKeys = personal ++ [ nixtest2 ];
