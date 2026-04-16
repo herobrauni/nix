@@ -1,10 +1,11 @@
-{ den, ... }:
+{ den, lib, ... }:
 {
   # gigahost1 — VPS at 185.125.169.63, converted from a fresh reinstall.
   den.aspects.gigahost1 = {
     includes = [
       den.aspects.base-server
       den.aspects.single-disk-bios-vps
+      den.aspects.impermanence
       den.aspects.networkd-base
       den.aspects.beszel-agent
     ];
@@ -25,11 +26,36 @@
       ];
       boot.kernelModules = [ "kvm-amd" ];
 
-      # ── Disk layout / bootloader come from single-disk-bios-vps ──
+      # ── Filesystems / bootloader ────────────────────────────────
+      # Reuse the single ext4 partition as /persist, keep / on tmpfs,
+      # and bind-mount /persist/nix into /nix.
+      fileSystems."/" = lib.mkForce {
+        fsType = "tmpfs";
+        options = [
+          "size=25%"
+          "mode=755"
+        ];
+      };
+      fileSystems."/persist" = {
+        device = "/dev/disk/by-partlabel/root";
+        fsType = "ext4";
+      };
+      fileSystems."/nix" = {
+        device = "/persist/nix";
+        fsType = "none";
+        options = [ "bind" ];
+        neededForBoot = true;
+      };
+
       boot.kernelParams = [ "console=tty0" ];
+      boot.initrd.postDeviceCommands = lib.mkAfter ''
+        mkdir -p /mnt-root/nix
+      '';
 
       # ── Networking (systemd-networkd, static IPv4/IPv6) ──────────
       networking.usePredictableInterfaceNames = false;
+
+      environment.persistence."/persist".directories = [ "/root" ];
 
       systemd.network.networks."10-eth0" = {
         matchConfig.Name = "eth0";
