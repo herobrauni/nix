@@ -37,7 +37,7 @@
         ];
       };
       fileSystems."/persist" = {
-        device = "/dev/disk/by-partlabel/root";
+        device = "/dev/disk/by-partlabel/disk-main-root";
         fsType = "ext4";
       };
       fileSystems."/nix" = {
