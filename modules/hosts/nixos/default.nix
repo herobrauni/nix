@@ -4,6 +4,7 @@
   den.aspects.nixos = {
     includes = [
       den.aspects.base-server
+      den.aspects.networkd-base
     ];
 
     nixos =
@@ -15,14 +16,7 @@
           "${modulesPath}/virtualisation/incus-virtual-machine.nix"
         ];
 
-        networking = {
-          dhcpcd.enable = false;
-          useDHCP = false;
-          useHostResolvConf = false;
-        };
-
-        services.resolved.enable = true;
-        systemd.network.enable = true;
+        networking.dhcpcd.enable = false;
 
         systemd.network.networks."50-enp5s0" = {
           matchConfig.Name = "enp5s0";

@@ -7,10 +7,11 @@
       den.aspects.base-server
       den.aspects.boot-limine-efi
       den.aspects.impermanence
+      den.aspects.networkd-base
     ];
 
     nixos =
-      { config, ... }:
+      { ... }:
       {
         system.stateVersion = "25.11";
 
@@ -68,12 +69,7 @@
 
         # ── Networking (systemd-networkd) ─────────────────────────────
         networking.usePredictableInterfaceNames = false;
-        networking.useNetworkd = true;
-        networking.useDHCP = false;
-        networking.useHostResolvConf = false;
         networking.networkmanager.enable = lib.mkForce false;
-        systemd.network.enable = true;
-        services.resolved.enable = true;
 
         systemd.network.networks."10-eth0" = {
           matchConfig.Name = "eth0";
@@ -92,16 +88,6 @@
           };
           linkConfig.RequiredForOnline = true;
         };
-
-        age.secrets.root-password-hash = {
-          file = ../../secrets/root-password-hash.age;
-          owner = "root";
-          group = "root";
-          mode = "0400";
-        };
-
-        users.mutableUsers = false;
-        users.users.root.hashedPasswordFile = config.age.secrets.root-password-hash.path;
 
         # ── Cache-first rebuilds on the host ──────────────────────────
         # Minimal compromise: allow a single local build job so Home Manager

@@ -10,7 +10,7 @@ This repo uses the **dendritic** pattern from `den` + `flake-file`:
 - **`modules/dendritic.nix`** — flake input declarations (the source of truth for inputs)
 - **`modules/defaults.nix`** — global defaults (stateVersion, home-manager integration)
 - **`modules/hosts.nix`** — host & user declarations (den generates `nixosConfigurations` from these)
-- **`modules/hosts/`** — per-host aspects (disk layout, networking, bootloader)
+- **`modules/hosts/`** — per-host directories (`default.nix`, optional `secrets/`, disk/layout/networking/boot config)
 - **`modules/aspects/`** — reusable config bundles included by hosts
 - **`modules/users/`** — per-user aspects (shell, packages, home-manager config)
 
@@ -18,10 +18,16 @@ This repo uses the **dendritic** pattern from `den` + `flake-file`:
 
 Aspects are composable config bundles. Hosts include them via `den.aspects.*`:
 
-- **`base-server`** — SSH, firewall, zram swap, nix settings, auto-upgrade
+- **`base-server`** — composition aspect that pulls together the common server baseline
+- **`server-core`** — SSH, firewall, zram swap, sudo, locale, timezone
+- **`ops-tools`** — fish + baseline admin toolkit packages
+- **`nix-core`** — shared nix settings, trusted users, substituters, cache keys
+- **`maintenance`** — nix GC/store optimisation, fstrim, unattended auto-upgrades
+- **`networkd-base`** — shared `systemd-networkd` + `resolved` baseline for server hosts
 - **`boot-limine-efi`** — shared Limine defaults for EFI hosts
 - **`boot-limine-bios`** — shared Limine defaults for BIOS hosts
 - **`impermanence`** — tmpfs root with persistent `/persist` (only for hosts that want it)
+- **`single-disk-bios-vps`** — shared destructive disko + Limine BIOS layout for single-disk VPSes
 
 ### Impermanence
 
@@ -40,6 +46,12 @@ nix run .#vm -- nixos2
 # Run flake checks (formatting + linting)
 nix flake check
 
+# Format all Nix files uniformly
+nix shell nixpkgs#nixfmt-rfc-style -c bash -lc 'find . -path ./.git -prune -o -type f -name "*.nix" -print0 | xargs -0 nixfmt'
+
+# Format docs / workflow / JSON uniformly
+nix shell nixpkgs#prettier -c bash -lc 'find . -path ./.git -prune -o -type f \( -name "*.md" -o -name "*.json" -o -name "*.yml" \) -print0 | xargs -0 prettier --write'
+
 # Regenerate flake.nix after editing dendritic.nix
 nix run .#write-flake
 
@@ -47,26 +59,80 @@ nix run .#write-flake
 nix flake update
 ```
 
+## Formatting Policy
+
+Formatting is enforced in CI via `nix flake check`.
+
+- `*.nix` → `nixfmt-rfc-style`
+- `*.md`, `*.json`, `*.yml` → `prettier`
+
+Before committing, run the two format commands above so local formatting matches CI exactly.
+
 ## Secrets
 
-Managed with [agenix](https://github.com/ryantm/agenix). See `secrets.nix` for key declarations.
+Managed with [agenix](https://github.com/ryantm/agenix). See `secrets.nix` for recipient/key declarations.
+
+### Layout
+
+- shared encrypted files live under `secrets/shared/`
+- host-specific encrypted files live under `modules/hosts/<hostname>/secrets/`
+- host-specific secret declarations also live under `modules/hosts/<hostname>/secrets/*.nix`
+
+### Commands
 
 ```bash
-# Create/edit a secret without installing agenix permanently
-EDITOR=vim nix run github:ryantm/agenix -- -e secrets/mysecret.age
+# Create/edit a shared secret without installing agenix permanently
+EDITOR=vim nix run github:ryantm/agenix -- -e secrets/shared/mysecret.age
+
+# Create/edit a host-specific secret
+EDITOR=vim nix run github:ryantm/agenix -- -e modules/hosts/nixos2/secrets/mysecret.age
 
 # Rekey after adding a host key
 EDITOR=vim nix run github:ryantm/agenix -- --rekey
 ```
 
+### How secrets are wired
+
+1. Add the encrypted file path to `secrets.nix` with the allowed recipient keys.
+2. For a host-specific secret, add a companion module in `modules/hosts/<hostname>/secrets/<name>.nix`.
+3. In that module, declare `age.secrets.<name>.file = ./<name>.age;` and any owner/group/mode settings.
+4. Consume the realized secret via `config.age.secrets.<name>.path` or `osConfig.age.secrets.<name>.path`.
+
+Host-specific secret modules are picked up automatically because the repo auto-imports `.nix` files from `modules/`.
+
+Example host-specific secret module:
+
+```nix
+{ den, ... }:
+{
+  den.aspects.nixos2.nixos =
+    { config, ... }:
+    {
+      age.secrets.root-password-hash = {
+        file = ./root-password-hash.age;
+        owner = "root";
+        group = "root";
+        mode = "0400";
+      };
+
+      users.mutableUsers = false;
+      users.users.root.hashedPasswordFile = config.age.secrets.root-password-hash.path;
+    };
+}
+```
+
 Important:
-- encrypted `secrets/*.age` files must be tracked by git so flakes include them during evaluation/deploy
-- after creating a new secret, run `git add secrets/<name>.age`
+
+- encrypted `.age` files must be tracked by git so flakes include them during evaluation/deploy
+- after creating a new secret, run `git add <path-to-secret>.age`
+- after adding a new host SSH key to `secrets.nix`, run `agenix --rekey`
 
 ## Deploying a New Host
 
 1. Add host declaration in `modules/hosts.nix`
-2. Create host aspect in `modules/hosts/newhost.nix`
+2. Create host aspect in `modules/hosts/newhost/default.nix`
+    - For a typical BIOS VPS with one disk, set `singleDisk.device = "/dev/sdX";` in `modules/hosts.nix`
+      and include `den.aspects.single-disk-bios-vps` instead of hand-writing `disko.devices`.
 3. CI will discover the new host automatically from `nixosConfigurations`
 4. Test with `nix run .#vm -- newhost`
 5. Deploy: `nix run github:nix-community/nixos-anywhere -- --flake .#newhost --target-host root@<ip>`
@@ -75,8 +141,8 @@ Important:
 ## Host Notes
 
 - Bootloader policy: prefer **Limine** across the fleet.
-  - EFI hosts should generally include `den.aspects.boot-limine-efi`.
-  - BIOS-only hosts should generally include `den.aspects.boot-limine-bios` and set the install device per-host.
+    - EFI hosts should generally include `den.aspects.boot-limine-efi`.
+    - BIOS-only hosts should generally include `den.aspects.boot-limine-bios` and set the install device per-host.
 - `nixos2` uses Limine with `/efi` as its EFI system partition and is configured with static IPv4 `10.178.76.45/24` via `systemd-networkd`.
   Default gateway is `10.178.76.1`.
 - `gigahost1` is configured for Limine in BIOS mode, installed to `/dev/sda`.

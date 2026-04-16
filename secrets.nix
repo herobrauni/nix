@@ -1,8 +1,12 @@
 # Agenix secrets declarations.
 # This file is read by the `agenix` CLI to know which keys can decrypt which secrets.
 #
-# To create/edit a secret:
-#   cd /path/to/repo && agenix -e secrets/mysecret.age
+# To create/edit a shared secret:
+#   cd /path/to/repo && agenix -e secrets/shared/mysecret.age
+#
+# To create/edit a host-specific secret:
+#   cd /path/to/repo && agenix -e modules/hosts/<hostname>/secrets/mysecret.age
+#   # then declare it in modules/hosts/<hostname>/secrets/<name>.nix
 #
 # After adding a new host key, rekey all secrets:
 #   agenix --rekey
@@ -27,9 +31,12 @@ let
   ];
 in
 {
-  "secrets/atuin-password.age".publicKeys = personal ++ [ nixos ];
-  "secrets/root-password-hash.age".publicKeys = personal ++ [ nixos2 ];
+  "modules/hosts/nixos/secrets/atuin-password.age".publicKeys = personal ++ [ nixos ];
+  "modules/hosts/nixos2/secrets/root-password-hash.age".publicKeys = personal ++ [ nixos2 ];
 
-  # Example: uncomment and edit to create your first secret
-  # "secrets/example.age".publicKeys = personal ++ [ nixos ];
+  # Example shared secret
+  # "secrets/shared/example.age".publicKeys = personal ++ [ nixos ];
+
+  # Example host-specific secret
+  # "modules/hosts/nixos2/secrets/example.age".publicKeys = personal ++ [ nixos2 ];
 }
