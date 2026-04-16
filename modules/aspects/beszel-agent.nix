@@ -1,7 +1,7 @@
 { den, lib, ... }:
 {
   den.aspects.beszel-agent.nixos =
-    { config, ... }:
+    { config, pkgs, ... }:
     {
       assertions = [
         {
@@ -13,6 +13,8 @@
       services.beszel.agent = {
         enable = true;
         openFirewall = true;
+        # nixpkgs is still on 0.18.6; keep a local override until 0.18.7 lands upstream.
+        package = pkgs.callPackage ../../pkgs/beszel-0.18.7.nix { };
         environment.HUB_URL = "https://beszel.riki.boo";
         environmentFile = config.age.secrets.beszel.path;
       };
