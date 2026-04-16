@@ -7,6 +7,11 @@
 > **Repo note:** In this repository, prefer **Limine** as the NixOS bootloader.
 > For EFI hosts, reuse `modules/aspects/boot-limine-efi.nix` where possible.
 > For BIOS-only hosts, reuse `modules/aspects/boot-limine-bios.nix` and explicitly set the install device per-host.
+> Format changes consistently before finishing work:
+>
+> - `*.nix` with `nixfmt-rfc-style`
+> - `*.md`, `*.json`, `*.yml` with `prettier`
+> - validate with `nix flake check`
 >
 > **Note:** All file paths in this document (`docs/src/content/docs/`, `nix/lib/`, `modules/`,
 > `templates/ci/modules/`, etc.) refer to the [Den framework](https://github.com/vic/den) source tree,
@@ -24,12 +29,12 @@
 
 **Always read the source on an as-needed basis.** Do not guess at API shapes or option names. Instead, look them up directly in the repository. The following directories are your primary references:
 
-| Directory | What it contains |
-|-----------|-----------------|
-| `./docs/src/content/docs/` | Full user-facing documentation (explanation, guides, reference, tutorials) |
-| `./nix/` | Core Den library (`parametric`, `canTake`, `take`, `__findFile`, context types, etc.) |
-| `./modules/` | OS framework (schema options, aspect definition, batteries, context wiring, output) |
-| `./templates/ci/modules/` | **Every Den feature as a fully isolated, executable nix-unit test** |
+| Directory                  | What it contains                                                                      |
+| -------------------------- | ------------------------------------------------------------------------------------- |
+| `./docs/src/content/docs/` | Full user-facing documentation (explanation, guides, reference, tutorials)            |
+| `./nix/`                   | Core Den library (`parametric`, `canTake`, `take`, `__findFile`, context types, etc.) |
+| `./modules/`               | OS framework (schema options, aspect definition, batteries, context wiring, output)   |
+| `./templates/ci/modules/`  | **Every Den feature as a fully isolated, executable nix-unit test**                   |
 
 The CI test suite at `./templates/ci/modules/features/` is the **most authoritative** working-code reference. Every test is a self-contained, evaluated Nix expression that demonstrates exactly how a feature behaves. Read the relevant test file whenever you need a code example.
 
@@ -57,7 +62,7 @@ The CI test suite at `./templates/ci/modules/features/` is the **most authoritat
 
 ## 2. Den in One Paragraph
 
-Den is built on [`flake-aspects`](https://github.com/vic/flake-aspects). It inverts the traditional host-centric Nix model: **aspects** (features) are the primary unit of organization. Each aspect declares its behavior per Nix *class* (`nixos`, `darwin`, `homeManager`, `hjem`, `maid`, `user`, custom…). Hosts simply include the aspects they need. A **context pipeline** (`den.ctx`) transforms host/user/home declarations into fully resolved Nix module system inputs. Parametric dispatch (via `builtins.functionArgs` introspection) means a function requiring `{ host, user }` is silently skipped in a `{ host }`-only context — no `mkIf`, no `enable` flags needed to gate context-sensitive configuration.
+Den is built on [`flake-aspects`](https://github.com/vic/flake-aspects). It inverts the traditional host-centric Nix model: **aspects** (features) are the primary unit of organization. Each aspect declares its behavior per Nix _class_ (`nixos`, `darwin`, `homeManager`, `hjem`, `maid`, `user`, custom…). Hosts simply include the aspects they need. A **context pipeline** (`den.ctx`) transforms host/user/home declarations into fully resolved Nix module system inputs. Parametric dispatch (via `builtins.functionArgs` introspection) means a function requiring `{ host, user }` is silently skipped in a `{ host }`-only context — no `mkIf`, no `enable` flags needed to gate context-sensitive configuration.
 
 ---
 
@@ -66,6 +71,7 @@ Den is built on [`flake-aspects`](https://github.com/vic/flake-aspects). It inve
 ### 3.1 Aspects
 
 An aspect is an attrset containing:
+
 - **Owned configs**: keys named after Nix classes (`nixos`, `darwin`, `homeManager`, `hjem`, `maid`, `user`, `os`, or any custom class). Values are plain attrset modules or function modules (`{ pkgs, ... }: { }`).
 - **`includes`**: a list of other aspects, static attrsets, or parametric functions to include as dependencies.
 - **`provides`**: named sub-aspects scoped to this aspect, accessible via `den.aspects.foo.provides.bar` or the shorthand `den.aspects.foo._.bar`.
@@ -89,15 +95,16 @@ CI examples: `templates/ci/modules/features/parametric.nix`
 
 **Parametric variants:**
 
-| Constructor | Behavior |
-|---|---|
-| `den.lib.parametric` | Owned + statics + atLeast function includes |
-| `den.lib.parametric.atLeast` | Only function includes matching atLeast |
-| `den.lib.parametric.exactly` | Only function includes matching exactly |
-| `den.lib.parametric.fixedTo attrs aspect` | Always uses given attrs as context |
-| `den.lib.parametric.expands attrs aspect` | Extends received context with attrs |
+| Constructor                               | Behavior                                    |
+| ----------------------------------------- | ------------------------------------------- |
+| `den.lib.parametric`                      | Owned + statics + atLeast function includes |
+| `den.lib.parametric.atLeast`              | Only function includes matching atLeast     |
+| `den.lib.parametric.exactly`              | Only function includes matching exactly     |
+| `den.lib.parametric.fixedTo attrs aspect` | Always uses given attrs as context          |
+| `den.lib.parametric.expands attrs aspect` | Extends received context with attrs         |
 
 **Context shortcuts** (built on `take.exactly` + `fixedTo`):
+
 - `den.lib.perHost aspect` — runs only in `{ host }` contexts
 - `den.lib.perUser aspect` — runs only in `{ host, user }` contexts
 - `den.lib.perHome aspect` — runs only in `{ home }` contexts
@@ -131,18 +138,18 @@ den.hosts.aarch64-darwin.mac.users.alice = {};
 
 Host options (all have defaults):
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `name` | attrset key | Config name |
-| `hostName` | `name` | Network hostname |
-| `system` | parent key | Platform |
-| `class` | auto from system | `"nixos"` or `"darwin"` |
-| `aspect` | `name` | Primary aspect name |
-| `instantiate` | class-dependent | OS builder function |
-| `intoAttr` | class-dependent | Flake output path |
-| `users` | `{}` | User declarations |
-| `*` | from `den.schema.host` | Schema-defined options |
-| `*` | | Freeform attributes (read from aspects via `host.myAttr`) |
+| Option        | Default                | Description                                               |
+| ------------- | ---------------------- | --------------------------------------------------------- |
+| `name`        | attrset key            | Config name                                               |
+| `hostName`    | `name`                 | Network hostname                                          |
+| `system`      | parent key             | Platform                                                  |
+| `class`       | auto from system       | `"nixos"` or `"darwin"`                                   |
+| `aspect`      | `name`                 | Primary aspect name                                       |
+| `instantiate` | class-dependent        | OS builder function                                       |
+| `intoAttr`    | class-dependent        | Flake output path                                         |
+| `users`       | `{}`                   | User declarations                                         |
+| `*`           | from `den.schema.host` | Schema-defined options                                    |
+| `*`           |                        | Freeform attributes (read from aspects via `host.myAttr`) |
 
 Read: `docs/src/content/docs/guides/declare-hosts.mdx`, `docs/src/content/docs/reference/schema.mdx`  
 CI examples: `templates/ci/modules/features/host-options.nix`
@@ -158,14 +165,14 @@ den.hosts.x86_64-linux.laptop.users.alice = {
 
 User options:
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `name` | attrset key | User config name |
-| `userName` | `name` | System account name |
-| `aspect` | `name` | Primary aspect |
-| `classes` | `[ "homeManager" ]` | Home environment classes |
-| `*` | from `den.schema.user` | Schema options |
-| `*` | | Freeform (accessible via `user.myAttr`) |
+| Option     | Default                | Description                             |
+| ---------- | ---------------------- | --------------------------------------- |
+| `name`     | attrset key            | User config name                        |
+| `userName` | `name`                 | System account name                     |
+| `aspect`   | `name`                 | Primary aspect                          |
+| `classes`  | `[ "homeManager" ]`    | Home environment classes                |
+| `*`        | from `den.schema.user` | Schema options                          |
+| `*`        |                        | Freeform (accessible via `user.myAttr`) |
 
 CI examples: `templates/ci/modules/features/user-classes.nix`, `templates/ci/modules/features/host-options.nix`
 
@@ -273,6 +280,7 @@ CI examples: `templates/ci/modules/features/context/`
 ### 7.2 Context Type Anatomy
 
 Each `den.ctx.<name>` has:
+
 - `description` — human readable
 - `_` / `provides` — map of provider functions, each taking context data and returning aspect fragments
 - `into` — map of transformation functions producing new context values
@@ -281,16 +289,16 @@ Each `den.ctx.<name>` has:
 
 ### 7.3 Built-in Context Types
 
-| Context | Data | Purpose |
-|---------|------|---------|
-| `den.ctx.host` | `{ host }` | One per declared host |
-| `den.ctx.user` | `{ host, user }` | One per user per host |
-| `den.ctx.home` | `{ home }` | One per standalone home |
-| `den.ctx.hm-host` | `{ host }` | Activates HM OS module |
-| `den.ctx.hm-user` | `{ host, user }` | Forwards `homeManager` class |
-| `den.ctx.wsl-host` | `{ host }` | WSL activation |
-| `den.ctx.hjem-host` / `hjem-user` | `{ host }` / `{ host, user }` | hjem integration |
-| `den.ctx.maid-host` / `maid-user` | `{ host }` / `{ host, user }` | nix-maid integration |
+| Context                           | Data                          | Purpose                      |
+| --------------------------------- | ----------------------------- | ---------------------------- |
+| `den.ctx.host`                    | `{ host }`                    | One per declared host        |
+| `den.ctx.user`                    | `{ host, user }`              | One per user per host        |
+| `den.ctx.home`                    | `{ home }`                    | One per standalone home      |
+| `den.ctx.hm-host`                 | `{ host }`                    | Activates HM OS module       |
+| `den.ctx.hm-user`                 | `{ host, user }`              | Forwards `homeManager` class |
+| `den.ctx.wsl-host`                | `{ host }`                    | WSL activation               |
+| `den.ctx.hjem-host` / `hjem-user` | `{ host }` / `{ host, user }` | hjem integration             |
+| `den.ctx.maid-host` / `maid-user` | `{ host }` / `{ host, user }` | nix-maid integration         |
 
 ### 7.4 Custom Context Types
 
@@ -317,29 +325,29 @@ Source: `modules/aspects/provides/`
 
 ### System Batteries
 
-| Battery | Usage | Effect |
-|---------|-------|--------|
-| `den._.define-user` | `den.default.includes = [ den._.define-user ]` | Creates `users.users.<name>` on OS + `home.username`/`home.homeDirectory` in HM |
-| `den._.hostname` | `den.default.includes = [ den._.hostname ]` | Sets `networking.hostName` on NixOS/Darwin/WSL from `host.hostName` |
-| `den._.primary-user` | `den.aspects.alice.includes = [ den._.primary-user ]` | Adds `wheel`/`networkmanager` groups (NixOS), sets `system.primaryUser` (Darwin), `wsl.defaultUser` (WSL) |
-| `den._.user-shell` | `den.aspects.alice.includes = [ (den._.user-shell "fish") ]` | Sets login shell at OS and HM levels |
-| `den._.mutual-provider` | `den.ctx.user.includes = [ den._.mutual-provider ]` | Enables bidirectional host↔user config via `provides.*` |
-| `den._.tty-autologin` | `den.aspects.laptop.includes = [ (den._.tty-autologin "alice") ]` | Enables TTY1 autologin (NixOS) |
-| `den._.wsl` | (auto-activated) | WSL activation; creates `wsl` forwarding class |
-| `den._.os-user` | (auto-enabled) | Forwards `user` class to `users.users.<userName>` on OS |
-| `den._.os-class` | (auto-enabled) | Forwards `os` class to both `nixos` and `darwin` |
-| `den._.forward` | see §9 | Creates custom Nix classes by forwarding |
-| `den._.import-tree` | see migration | Auto-imports directories of non-dendritic modules |
-| `den._.unfree` | `den.aspects.laptop.includes = [ (den._.unfree [ "nvidia-x11" ]) ]` | Allows specific unfree packages |
+| Battery                 | Usage                                                               | Effect                                                                                                    |
+| ----------------------- | ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `den._.define-user`     | `den.default.includes = [ den._.define-user ]`                      | Creates `users.users.<name>` on OS + `home.username`/`home.homeDirectory` in HM                           |
+| `den._.hostname`        | `den.default.includes = [ den._.hostname ]`                         | Sets `networking.hostName` on NixOS/Darwin/WSL from `host.hostName`                                       |
+| `den._.primary-user`    | `den.aspects.alice.includes = [ den._.primary-user ]`               | Adds `wheel`/`networkmanager` groups (NixOS), sets `system.primaryUser` (Darwin), `wsl.defaultUser` (WSL) |
+| `den._.user-shell`      | `den.aspects.alice.includes = [ (den._.user-shell "fish") ]`        | Sets login shell at OS and HM levels                                                                      |
+| `den._.mutual-provider` | `den.ctx.user.includes = [ den._.mutual-provider ]`                 | Enables bidirectional host↔user config via `provides.*`                                                  |
+| `den._.tty-autologin`   | `den.aspects.laptop.includes = [ (den._.tty-autologin "alice") ]`   | Enables TTY1 autologin (NixOS)                                                                            |
+| `den._.wsl`             | (auto-activated)                                                    | WSL activation; creates `wsl` forwarding class                                                            |
+| `den._.os-user`         | (auto-enabled)                                                      | Forwards `user` class to `users.users.<userName>` on OS                                                   |
+| `den._.os-class`        | (auto-enabled)                                                      | Forwards `os` class to both `nixos` and `darwin`                                                          |
+| `den._.forward`         | see §9                                                              | Creates custom Nix classes by forwarding                                                                  |
+| `den._.import-tree`     | see migration                                                       | Auto-imports directories of non-dendritic modules                                                         |
+| `den._.unfree`          | `den.aspects.laptop.includes = [ (den._.unfree [ "nvidia-x11" ]) ]` | Allows specific unfree packages                                                                           |
 
 CI examples: `templates/ci/modules/features/batteries/`
 
 ### Flake-Parts Batteries
 
-| Battery | Effect |
-|---------|--------|
+| Battery         | Effect                                             |
+| --------------- | -------------------------------------------------- |
 | `den._.inputs'` | Exposes system-specialized `inputs'` as module arg |
-| `den._.self'` | Exposes system-specialized `self'` as module arg |
+| `den._.self'`   | Exposes system-specialized `self'` as module arg   |
 
 CI example: `templates/ci/modules/features/batteries/flake-parts.nix`
 
@@ -428,16 +436,16 @@ CI examples: `templates/ci/modules/features/user-host-mutual-config.nix`
 
 Parameters:
 
-| Parameter | Description |
-|-----------|-------------|
-| `each` | List of items to iterate over |
-| `fromClass` | Custom class name to read from |
-| `intoClass` | Target class to write into |
-| `intoPath` | Target attribute path in target class |
-| `fromAspect` | The aspect to read the custom class from |
-| `guard` | (optional) Only forward when predicate returns true — use `lib.optionalAttrs` for option existence, `lib.mkIf` for config values |
-| `adaptArgs` | (optional) Transform module arguments before forwarding |
-| `adapterModule` | (optional) Custom submodule type for the forwarded submodule |
+| Parameter       | Description                                                                                                                      |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `each`          | List of items to iterate over                                                                                                    |
+| `fromClass`     | Custom class name to read from                                                                                                   |
+| `intoClass`     | Target class to write into                                                                                                       |
+| `intoPath`      | Target attribute path in target class                                                                                            |
+| `fromAspect`    | The aspect to read the custom class from                                                                                         |
+| `guard`         | (optional) Only forward when predicate returns true — use `lib.optionalAttrs` for option existence, `lib.mkIf` for config values |
+| `adaptArgs`     | (optional) Transform module arguments before forwarding                                                                          |
+| `adapterModule` | (optional) Custom submodule type for the forwarded submodule                                                                     |
 
 Source: `modules/aspects/provides/forward.nix`  
 Read: `docs/src/content/docs/guides/custom-classes.mdx`  
@@ -470,6 +478,7 @@ imports = [ (inputs.den.namespace "myns" [ inputs.team-config ]) ];
 ```
 
 After importing:
+
 - `den.ful.myns` — the namespace attrset
 - `myns` — module argument alias to `den.ful.myns`
 - `flake.denful.myns` — flake output (if exported)
@@ -494,6 +503,7 @@ Enable optional syntactic sugar via `__findFile`:
 ```
 
 Resolution rules (in order):
+
 1. `<den.x.y>` → `config.den.x.y`
 2. `<aspect>` → `config.den.aspects.aspect`
 3. `<aspect/sub>` → `config.den.aspects.aspect.provides.sub`
@@ -515,28 +525,28 @@ CI examples: `templates/ci/modules/features/angle-brackets.nix`
 Full reference: `docs/src/content/docs/reference/lib.mdx`  
 Source: `nix/lib/default.nix`
 
-| Function | Purpose |
-|----------|---------|
-| `den.lib.parametric` | Wrap aspect with context-aware dispatch (atLeast) |
-| `den.lib.parametric.atLeast` | Same as `parametric` |
-| `den.lib.parametric.exactly` | Match only when required args exactly equal context |
-| `den.lib.parametric.fixedTo attrs aspect` | Apply aspect with fixed context |
-| `den.lib.parametric.expands attrs aspect` | Extend context with attrs before dispatch |
-| `den.lib.parametric.withOwn` | Low-level constructor |
-| `den.lib.canTake params fn` | Check if fn's required args are satisfied (atLeast) |
-| `den.lib.canTake.atLeast params fn` | Same as above |
-| `den.lib.canTake.exactly params fn` | Exact parameter match check |
-| `den.lib.take.atLeast fn ctx` | Call fn ctx if canTake.atLeast, else `{}` |
-| `den.lib.take.exactly fn ctx` | Call fn ctx if canTake.exactly, else `{}` |
-| `den.lib.perHost aspect` | Restrict to `{ host }` contexts |
-| `den.lib.perUser aspect` | Restrict to `{ host, user }` contexts |
-| `den.lib.perHome aspect` | Restrict to `{ home }` contexts |
-| `den.lib.statics aspect ctx` | Extract only static includes |
-| `den.lib.owned aspect` | Extract owned configs (no includes/functor) |
-| `den.lib.isFn value` | True if value is function or has `__functor` |
-| `den.lib.isStatic fn` | True if fn accepts `{ class, aspect-chain }` |
-| `den.lib.__findFile` | Angle bracket resolver |
-| `den.lib.aspects` | Full flake-aspects API (`resolve`, `merge`, types) |
+| Function                                  | Purpose                                             |
+| ----------------------------------------- | --------------------------------------------------- |
+| `den.lib.parametric`                      | Wrap aspect with context-aware dispatch (atLeast)   |
+| `den.lib.parametric.atLeast`              | Same as `parametric`                                |
+| `den.lib.parametric.exactly`              | Match only when required args exactly equal context |
+| `den.lib.parametric.fixedTo attrs aspect` | Apply aspect with fixed context                     |
+| `den.lib.parametric.expands attrs aspect` | Extend context with attrs before dispatch           |
+| `den.lib.parametric.withOwn`              | Low-level constructor                               |
+| `den.lib.canTake params fn`               | Check if fn's required args are satisfied (atLeast) |
+| `den.lib.canTake.atLeast params fn`       | Same as above                                       |
+| `den.lib.canTake.exactly params fn`       | Exact parameter match check                         |
+| `den.lib.take.atLeast fn ctx`             | Call fn ctx if canTake.atLeast, else `{}`           |
+| `den.lib.take.exactly fn ctx`             | Call fn ctx if canTake.exactly, else `{}`           |
+| `den.lib.perHost aspect`                  | Restrict to `{ host }` contexts                     |
+| `den.lib.perUser aspect`                  | Restrict to `{ host, user }` contexts               |
+| `den.lib.perHome aspect`                  | Restrict to `{ home }` contexts                     |
+| `den.lib.statics aspect ctx`              | Extract only static includes                        |
+| `den.lib.owned aspect`                    | Extract owned configs (no includes/functor)         |
+| `den.lib.isFn value`                      | True if value is function or has `__functor`        |
+| `den.lib.isStatic fn`                     | True if fn accepts `{ class, aspect-chain }`        |
+| `den.lib.__findFile`                      | Angle bracket resolver                              |
+| `den.lib.aspects`                         | Full flake-aspects API (`resolve`, `merge`, types)  |
 
 ---
 
@@ -545,6 +555,7 @@ Source: `nix/lib/default.nix`
 Den's `den.lib` is domain-agnostic. It can configure any Nix module system (Terranix, NixVim, system-manager, NVF, MicroVM, custom). The OS framework (`modules/`) is entirely optional.
 
 Import without the framework:
+
 ```nix
 # Use the nixModule for any module system
 denModule = (import inputs.den.outPath).nixModule inputs;
@@ -552,6 +563,7 @@ ev = lib.evalModules { modules = [ denModule <your-module> ]; };
 ```
 
 Or call the library directly:
+
 ```nix
 den-lib = import inputs.den.outPath { inherit lib config inputs; };
 ```

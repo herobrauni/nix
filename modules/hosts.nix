@@ -7,6 +7,7 @@
   den.hosts.x86_64-linux.gigahost1 = {
     aspect = "gigahost1";
     hostName = "gigahost1";
+    singleDisk.device = "/dev/sda";
     users.brauni = { };
   };
   den.hosts.x86_64-linux.nixos2 = {

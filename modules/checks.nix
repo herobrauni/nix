@@ -13,7 +13,18 @@
             }
             ''
               cd ${./..}
-              nixfmt --check modules/ secrets.nix
+              nixfmt --check $(find . -path ./.git -prune -o -type f -name '*.nix' -print)
+              touch $out
+            '';
+
+        prettier =
+          pkgs.runCommand "prettier-check"
+            {
+              nativeBuildInputs = [ pkgs.prettier ];
+            }
+            ''
+              cd ${./..}
+              prettier --check $(find . -path ./.git -prune -o -type f \( -name '*.md' -o -name '*.json' -o -name '*.yml' \) -print)
               touch $out
             '';
 
