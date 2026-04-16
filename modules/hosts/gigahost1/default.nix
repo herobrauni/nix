@@ -6,10 +6,10 @@
       den.aspects.base-server
       den.aspects.single-disk-bios-vps
       den.aspects.networkd-base
+      den.aspects.beszel-agent
     ];
 
     nixos = {
-
       system.stateVersion = "25.11";
 
       # ── Hardware ──────────────────────────────────────────────────
@@ -58,4 +58,5 @@
       };
     };
   };
+
 }
