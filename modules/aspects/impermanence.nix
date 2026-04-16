@@ -39,7 +39,6 @@
       { pkgs, ... }:
       {
         home.persistence."/persist/home" = {
-          allowOther = true;
           directories = [
             ".ssh"
             ".config"
