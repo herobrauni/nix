@@ -55,7 +55,13 @@
       # ── Networking (systemd-networkd, static IPv4/IPv6) ──────────
       networking.usePredictableInterfaceNames = false;
 
-      environment.persistence."/persist".directories = [ "/root" ];
+      environment.persistence."/persist".directories = [
+        "/root"
+
+        # Beszel keeps its fingerprint / credentials state under /var/lib/beszel-agent.
+        # Reuse the pre-impermanence state from the old root now mounted at /persist.
+        "/var/lib/beszel-agent"
+      ];
 
       systemd.network.networks."10-eth0" = {
         matchConfig.Name = "eth0";
