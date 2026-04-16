@@ -31,7 +31,11 @@ let
   ];
 in
 {
-  "modules/hosts/nixos/secrets/atuin-password.age".publicKeys = personal ++ [ nixos ];
+  "secrets/shared/atuin-password.age".publicKeys = personal ++ [
+    nixos
+    nixos2
+    gigahost1
+  ];
   "modules/hosts/nixos2/secrets/root-password-hash.age".publicKeys = personal ++ [ nixos2 ];
   "modules/hosts/gigahost1/secrets/beszel.age".publicKeys = personal ++ [ gigahost1 ];
 

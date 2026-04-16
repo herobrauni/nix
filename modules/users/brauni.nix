@@ -1,4 +1,4 @@
-{ den, ... }:
+{ den, lib, ... }:
 {
   den.aspects.brauni = {
     includes = [
@@ -12,6 +12,13 @@
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJmpZL3J2RqRK7ynIgowaZBKzI+EiuCGmwB6l0AxLk1v"
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFfL/A140RdlJ1LQQR/lwtPwf0MAn5haqDdXGKWsW8sa"
       ];
+    }
+    // lib.optionalAttrs (builtins.pathExists ../../secrets/shared/atuin-password.age) {
+      age.secrets.atuin-password = {
+        file = ../../secrets/shared/atuin-password.age;
+        owner = "brauni";
+        mode = "0400";
+      };
     };
 
     homeManager =
