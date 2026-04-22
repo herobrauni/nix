@@ -38,6 +38,7 @@ in
   ];
   "modules/hosts/nixos2/secrets/root-password-hash.age".publicKeys = personal ++ [ nixos2 ];
   "modules/hosts/gigahost1/secrets/beszel.age".publicKeys = personal ++ [ gigahost1 ];
+  "modules/hosts/gigahost1/secrets/netbird-setup-key.age".publicKeys = personal ++ [ gigahost1 ];
 
   # Example shared secret
   # "secrets/shared/example.age".publicKeys = personal ++ [ nixos ];

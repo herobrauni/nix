@@ -7,6 +7,7 @@
       den.aspects.single-disk-bios-vps
       den.aspects.impermanence
       den.aspects.networkd-base
+      den.aspects.netbird
       den.aspects.beszel-agent
     ];
 
