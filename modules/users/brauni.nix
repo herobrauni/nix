@@ -6,13 +6,77 @@
       (den.provides.user-shell "fish")
     ];
 
-    # SSH keys for remote access
-    nixos = {
-      users.users.brauni.openssh.authorizedKeys.keys = [
-        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJmpZL3J2RqRK7ynIgowaZBKzI+EiuCGmwB6l0AxLk1v"
-        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFfL/A140RdlJ1LQQR/lwtPwf0MAn5haqDdXGKWsW8sa"
-      ];
-    };
+    # SSH keys for remote access + shared user-level services.
+    nixos =
+      {
+        config,
+        lib,
+        pkgs,
+        ...
+      }:
+      let
+        hasAtuinSecrets =
+          builtins.hasAttr "atuin-password" config.age.secrets
+          && builtins.hasAttr "atuin-key" config.age.secrets;
+        atuinBin = lib.getExe pkgs.atuin;
+        atuinAutoLogin = pkgs.writeShellScript "atuin-auto-login" ''
+          set -euo pipefail
+
+          export HOME=/home/brauni
+          export XDG_CONFIG_HOME="$HOME/.config"
+          export XDG_DATA_HOME="$HOME/.local/share"
+          export XDG_STATE_HOME="$HOME/.local/state"
+
+          ${pkgs.coreutils}/bin/mkdir -p "$XDG_DATA_HOME/atuin" "$XDG_STATE_HOME"
+
+          if ${atuinBin} status >/dev/null 2>&1; then
+            exit 0
+          fi
+
+          password="$(${pkgs.coreutils}/bin/tr -d '\n' < ${config.age.secrets."atuin-password".path})"
+          key="$(${pkgs.coreutils}/bin/tr -d '\n' < ${config.age.secrets."atuin-key".path})"
+
+          ${atuinBin} login \
+            --username brauni \
+            --password "$password" \
+            --key "$key"
+
+          ${atuinBin} sync
+          ${atuinBin} status >/dev/null
+        '';
+      in
+      {
+        users.users.brauni.openssh.authorizedKeys.keys = [
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJmpZL3J2RqRK7ynIgowaZBKzI+EiuCGmwB6l0AxLk1v"
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFfL/A140RdlJ1LQQR/lwtPwf0MAn5haqDdXGKWsW8sa"
+        ];
+
+        systemd.services."atuin-auto-login" = lib.mkIf hasAtuinSecrets {
+          description = "Ensure brauni is logged into Atuin";
+          after = [ "network-online.target" ];
+          wants = [ "network-online.target" ];
+          wantedBy = [ "multi-user.target" ];
+          serviceConfig = {
+            Type = "oneshot";
+            User = "brauni";
+            WorkingDirectory = "/home/brauni";
+            UMask = "0077";
+            ExecStart = atuinAutoLogin;
+          };
+        };
+
+        systemd.timers."atuin-auto-login" = lib.mkIf hasAtuinSecrets {
+          description = "Retry brauni Atuin login if the session is missing";
+          wantedBy = [ "timers.target" ];
+          timerConfig = {
+            OnBootSec = "5min";
+            OnUnitActiveSec = "1h";
+            Persistent = true;
+            RandomizedDelaySec = "10min";
+            Unit = "atuin-auto-login.service";
+          };
+        };
+      };
 
     homeManager =
       {

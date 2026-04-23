@@ -36,6 +36,11 @@ in
     crunchbits1
     gc5
   ];
+  "secrets/shared/atuin-key.age".publicKeys = personal ++ [
+    gigahost1
+    crunchbits1
+    gc5
+  ];
   "modules/hosts/gigahost1/secrets/beszel.age".publicKeys = personal ++ [ gigahost1 ];
   "modules/hosts/gigahost1/secrets/netbird-setup-key.age".publicKeys = personal ++ [ gigahost1 ];
   "modules/hosts/crunchbits1/secrets/beszel.age".publicKeys = personal ++ [ crunchbits1 ];

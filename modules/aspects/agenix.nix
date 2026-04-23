@@ -18,13 +18,22 @@
           "/persist/etc/ssh/ssh_host_ed25519_key"
           "/persist/etc/ssh/ssh_host_rsa_key"
         ];
-      }
-      // lib.optionalAttrs (builtins.pathExists ../../secrets/shared/atuin-password.age) {
-        secrets.atuin-password = {
-          file = ../../secrets/shared/atuin-password.age;
-          owner = "brauni";
-          mode = "0400";
-        };
+
+        secrets =
+          (lib.optionalAttrs (builtins.pathExists ../../secrets/shared/atuin-password.age) {
+            "atuin-password" = {
+              file = ../../secrets/shared/atuin-password.age;
+              owner = "brauni";
+              mode = "0400";
+            };
+          })
+          // (lib.optionalAttrs (builtins.pathExists ../../secrets/shared/atuin-key.age) {
+            "atuin-key" = {
+              file = ../../secrets/shared/atuin-key.age;
+              owner = "brauni";
+              mode = "0400";
+            };
+          });
       };
     };
   };
