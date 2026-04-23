@@ -23,6 +23,7 @@ let
   nixos = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAig9U9QbDqK+pOklbYOni1MaMTbZALGAvV1L98OzqD0 root@nixos";
   nixos2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBzHy4LmBrl2Cqv2JTKLjhX+JECcaZePx9saKWhA1rGK root@nixos";
   gigahost1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP4zTijNoKXYhh3Qc8gFcq/r9D5pA3QKPH4hZ5gnAwz4";
+  crunchbits1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHGxBe6ZK/2vDs3olmlT8at8srlxUJlpZcOsVKD0dSi6";
 
   # All personal keys (for secrets brauni should be able to decrypt locally)
   personal = [
@@ -35,10 +36,13 @@ in
     nixos
     nixos2
     gigahost1
+    crunchbits1
   ];
   "modules/hosts/nixos2/secrets/root-password-hash.age".publicKeys = personal ++ [ nixos2 ];
   "modules/hosts/gigahost1/secrets/beszel.age".publicKeys = personal ++ [ gigahost1 ];
   "modules/hosts/gigahost1/secrets/netbird-setup-key.age".publicKeys = personal ++ [ gigahost1 ];
+  "modules/hosts/crunchbits1/secrets/beszel.age".publicKeys = personal ++ [ crunchbits1 ];
+  "modules/hosts/crunchbits1/secrets/netbird-setup-key.age".publicKeys = personal ++ [ crunchbits1 ];
 
   # Example shared secret
   # "secrets/shared/example.age".publicKeys = personal ++ [ nixos ];
