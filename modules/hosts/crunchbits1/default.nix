@@ -1,11 +1,9 @@
 { den, lib, ... }:
 {
-  # crunchbits1 — Crunchbits VPS at 104.36.84.254, converted from a fresh reinstall.
+  # crunchbits1 — Crunchbits VPS at 104.36.84.254, adopted in-place from an existing NixOS install.
   den.aspects.crunchbits1 = {
     includes = [
       den.aspects.base-server
-      den.aspects.agenix
-      den.aspects.single-disk-bios-vps
       den.aspects.impermanence
       den.aspects.networkd-base
       den.aspects.netbird
@@ -31,8 +29,12 @@
       boot.kernelModules = [ "kvm-amd" ];
 
       # ── Filesystems / bootloader ────────────────────────────────
-      # Reuse the single ext4 partition as /persist, keep / on tmpfs,
-      # and bind-mount /persist/nix into /nix.
+      # Reuse the existing ext4 root filesystem as /persist, keep / on tmpfs,
+      # and bind-mount persistent subtrees back into place.
+      #
+      # Keep GRUB for the in-place migration so the first nixos-rebuild does not
+      # also attempt a remote bootloader migration. We can switch this host to
+      # Limine later if explicitly desired.
       fileSystems."/" = lib.mkForce {
         fsType = "tmpfs";
         options = [
@@ -41,7 +43,7 @@
         ];
       };
       fileSystems."/persist" = {
-        device = "/dev/disk/by-partlabel/disk-main-root";
+        device = "/dev/disk/by-uuid/77eb803a-27dd-482f-a393-e4ff5ef8dcc4";
         fsType = "ext4";
       };
       fileSystems."/nix" = {
@@ -50,14 +52,28 @@
         options = [ "bind" ];
         neededForBoot = true;
       };
+      fileSystems."/boot" = {
+        device = "/persist/boot";
+        fsType = "none";
+        options = [ "bind" ];
+        neededForBoot = true;
+      };
 
-      boot.kernelParams = [ "console=tty0" ];
+      boot.loader.grub = {
+        enable = true;
+        device = "/dev/vda";
+      };
+      boot.kernelParams = [
+        "console=ttyS0,115200n8"
+        "console=tty0"
+      ];
       boot.initrd.postDeviceCommands = lib.mkAfter ''
-        mkdir -p /mnt-root/nix
+        mkdir -p /mnt-root/nix /mnt-root/boot
       '';
 
       # ── Networking (systemd-networkd, static IPv4/IPv6) ──────────
       networking.usePredictableInterfaceNames = false;
+      networking.networkmanager.enable = lib.mkForce false;
 
       environment.persistence."/persist".directories = [
         "/root"
@@ -79,6 +95,7 @@
           }
           {
             Gateway = "2606:a8c0:3::1";
+            GatewayOnLink = true;
           }
         ];
         networkConfig = {

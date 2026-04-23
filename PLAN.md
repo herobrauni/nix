@@ -114,6 +114,14 @@ nix run .#vm -- nixos2
 
 ### Deploy a host
 
+If the machine is already running NixOS, prefer an in-place deploy:
+
+```bash
+nixos-rebuild switch --flake .#<host> --target-host root@<ip>
+```
+
+Use `nixos-anywhere` only for a fresh install or an explicit reprovision/repartition:
+
 ```bash
 nix run github:nix-community/nixos-anywhere -- --flake .#<host> --target-host root@<ip>
 ```

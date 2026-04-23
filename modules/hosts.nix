@@ -13,7 +13,6 @@
   den.hosts.x86_64-linux.crunchbits1 = {
     aspect = "crunchbits1";
     hostName = "crunchbits1";
-    singleDisk.device = "/dev/vda";
     users.brauni = { };
   };
   den.hosts.x86_64-linux.nixos2 = {

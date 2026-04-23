@@ -135,8 +135,11 @@ Important:
       and include `den.aspects.single-disk-bios-vps` instead of hand-writing `disko.devices`.
 3. CI will discover the new host automatically from `nixosConfigurations`
 4. Test with `nix run .#vm -- newhost`
-5. Deploy: `nix run github:nix-community/nixos-anywhere -- --flake .#newhost --target-host root@<ip>`
-6. After first boot: add host SSH key to `secrets.nix` and rekey
+5. If the host is already running NixOS, prefer an in-place deploy:
+   `nixos-rebuild switch --flake .#newhost --target-host root@<ip>`
+6. Use `nixos-anywhere` only for a fresh install or an explicit reprovision/repartition:
+   `nix run github:nix-community/nixos-anywhere -- --flake .#newhost --target-host root@<ip>`
+7. After first boot: add host SSH key to `secrets.nix` and rekey
 
 ## Host Notes
 

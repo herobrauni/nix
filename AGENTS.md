@@ -7,6 +7,8 @@
 > **Repo note:** In this repository, prefer **Limine** as the NixOS bootloader.
 > For EFI hosts, reuse `modules/aspects/boot-limine-efi.nix` where possible.
 > For BIOS-only hosts, reuse `modules/aspects/boot-limine-bios.nix` and explicitly set the install device per-host.
+> For hosts that are already running NixOS, prefer in-place adoption/rebuilds (`nixos-rebuild --target-host` or equivalent) instead of `nixos-anywhere`.
+> Use `nixos-anywhere` only for fresh installs or when the user explicitly wants reprovisioning/repartitioning.
 > Format changes consistently before finishing work:
 >
 > - `*.nix` with `nixfmt-rfc-style`
