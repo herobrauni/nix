@@ -1,0 +1,89 @@
+name: Update flake.lock
+
+on:
+  schedule:
+    # 00:15 UTC daily, leaving plenty of time before hosts poll main at 04:00 UTC.
+    - cron: "15 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-flake-lock
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      # Pinned to immutable commit SHAs for supply-chain safety.
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
+
+      # Cachix is the binary cache for this repo; publish updated host closures
+      # before pushing the new lock file to main.
+      - uses: cachix/cachix-action@1eb2ef646ac0255473d23a5907ad7b04ce94065c # v17
+        with:
+          name: brauni
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+
+      - name: Configure git author
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Refresh generated flake and update inputs
+        run: |
+          nix run .#write-flake
+          nix flake update
+
+      - name: Detect flake changes
+        id: changes
+        run: |
+          if git diff --quiet -- flake.nix flake.lock; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No flake input updates available."
+            exit 0
+          fi
+
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          git diff --stat -- flake.nix flake.lock
+
+      - name: Run flake checks
+        if: steps.changes.outputs.changed == 'true'
+        run: nix flake check
+
+      - name: Build and push full closure for all discovered NixOS hosts
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          mapfile -t hosts < <(
+            nix eval --json .#nixosConfigurations --apply 'x: builtins.attrNames x' | jq -r '.[]'
+          )
+
+          if [ "${#hosts[@]}" -eq 0 ]; then
+            echo "No nixosConfigurations found"
+            exit 1
+          fi
+
+          printf 'Discovered hosts: %s\n' "${hosts[*]}"
+
+          targets=()
+          for host in "${hosts[@]}"; do
+            targets+=(".#nixosConfigurations.${host}.config.system.build.toplevel")
+          done
+
+          nix build "${targets[@]}"
+          cachix push brauni $(nix path-info --recursive "${targets[@]}")
+
+      - name: Commit and push flake updates
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git add flake.nix flake.lock
+          git commit -m "flake: nightly input update"
+          git push origin HEAD:main

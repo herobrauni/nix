@@ -6,18 +6,17 @@
     ":semanticCommitsDisabled"
   ],
   "timezone": "Europe/Berlin",
-  "schedule": ["after 1am and before 5am"],
+  "schedule": ["after 1am and before 4am"],
   "prHourlyLimit": 0,
   "prConcurrentLimit": 0,
   "lockFileMaintenance": {
     "enabled": true,
-    "schedule": ["after 1am and before 5am"]
+    "schedule": ["after 1am and before 4am"]
   },
   "packageRules": [
     {
       "matchManagers": [
         "github-actions",
-        "nix",
         "dockerfile",
         "docker-compose",
         "npm",
@@ -26,12 +25,7 @@
         "cargo",
         "gomod"
       ],
-      "schedule": ["after 1am and before 5am"]
-    },
-    {
-      "matchManagers": ["nix"],
-      "groupName": "nix flake inputs",
-      "labels": ["dependencies", "nix"]
+      "schedule": ["after 1am and before 4am"]
     },
     {
       "matchUpdateTypes": [

@@ -40,7 +40,7 @@ Converted host networking to `systemd.network` style for consistency.
 
 ### 8. ~~VM module only built one test host~~ ✅ DONE
 
-VM runner now accepts a host argument and defaults to the local `nixos` host.
+VM runner now accepts a host argument and defaults to the first available configured host.
 
 ### 9. ~~One converted host intentionally had no disko~~ ✅ DONE
 

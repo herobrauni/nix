@@ -14,20 +14,16 @@ nix/
 │   ├── hosts.nix                # host & user declarations
 │   ├── defaults.nix             # global defaults (HM, mutual-provider)
 │   ├── checks.nix               # flake checks (nixfmt, statix, deadnix)
-│   ├── vm.nix                   # VM test runner (nix run .#vm -- <host>)
 │   ├── hosts/
-│   │   ├── gigahost1/
-│   │   │   └── default.nix
-│   │   ├── nixos/
+│   │   ├── crunchbits1/
 │   │   │   ├── default.nix
 │   │   │   └── secrets/
-│   │   │       ├── atuin-password.age
-│   │   │       └── atuin-password.nix
-│   │   └── nixos2/
+│   │   ├── gc5/
+│   │   │   ├── default.nix
+│   │   │   └── secrets/
+│   │   └── gigahost1/
 │   │       ├── default.nix
 │   │       └── secrets/
-│   │           ├── root-password-hash.age
-│   │           └── root-password-hash.nix
 │   ├── aspects/
 │   │   ├── base-server.nix
 │   │   ├── maintenance.nix
@@ -49,8 +45,8 @@ nix/
 
 ## Current Host Set
 
-- `nixos` — current local/VM-ish host used for repo testing
-- `nixos2` — repo-managed host using Limine EFI and `/efi`
+- `crunchbits1` — remote host using Limine BIOS on `/dev/vda`
+- `gc5` — remote host using Limine BIOS on `/dev/vda`
 - `gigahost1` — remote host using Limine BIOS on `/dev/sda`
 
 ## Architecture
@@ -100,16 +96,9 @@ nix/
 ### Build a host
 
 ```bash
-nix build .#nixosConfigurations.nixos.config.system.build.toplevel
-nix build .#nixosConfigurations.nixos2.config.system.build.toplevel
+nix build .#nixosConfigurations.crunchbits1.config.system.build.toplevel
+nix build .#nixosConfigurations.gc5.config.system.build.toplevel
 nix build .#nixosConfigurations.gigahost1.config.system.build.toplevel
-```
-
-### Test a host in a VM
-
-```bash
-nix run .#vm
-nix run .#vm -- nixos2
 ```
 
 ### Deploy a host

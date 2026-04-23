@@ -20,9 +20,18 @@
 
       system.autoUpgrade = {
         enable = true;
-        flake = "github:herobrauni/nix";
+
+        # Poll main every night, but honour the repo's committed flake.lock.
+        # The repo's scheduled flake update workflow moves inputs forward;
+        # hosts only consume what already landed.
+        flake = "github:herobrauni/nix?ref=main";
+        upgrade = false;
+
+        # All servers use UTC (see server-core), so this runs at 04:00 UTC.
         dates = "04:00";
         randomizedDelaySec = "30min";
+        fixedRandomDelay = true;
+
         allowReboot = true;
         rebootWindow = {
           lower = "03:00";

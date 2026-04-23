@@ -37,11 +37,7 @@ Hosts that include the `impermanence` aspect get a tmpfs root wiped on every boo
 
 ```bash
 # Build a host
-nix build .#nixosConfigurations.nixos2.config.system.build.toplevel
-
-# Test a host in a VM (defaults to nixos)
-nix run .#vm
-nix run .#vm -- nixos2
+nix build .#nixosConfigurations.gc5.config.system.build.toplevel
 
 # Run flake checks (formatting + linting)
 nix flake check
@@ -85,7 +81,7 @@ Managed with [agenix](https://github.com/ryantm/agenix). See `secrets.nix` for r
 EDITOR=vim nix run github:ryantm/agenix -- -e secrets/shared/mysecret.age
 
 # Create/edit a host-specific secret
-EDITOR=vim nix run github:ryantm/agenix -- -e modules/hosts/nixos2/secrets/mysecret.age
+EDITOR=vim nix run github:ryantm/agenix -- -e modules/hosts/gigahost1/secrets/mysecret.age
 
 # Rekey after adding a host key
 EDITOR=vim nix run github:ryantm/agenix -- --rekey
@@ -105,7 +101,7 @@ Example host-specific secret module:
 ```nix
 { den, ... }:
 {
-  den.aspects.nixos2.nixos =
+  den.aspects.gigahost1.nixos =
     { config, ... }:
     {
       age.secrets.root-password-hash = {
@@ -134,23 +130,29 @@ Important:
     - For a typical BIOS VPS with one disk, set `singleDisk.device = "/dev/sdX";` in `modules/hosts.nix`
       and include `den.aspects.single-disk-bios-vps` instead of hand-writing `disko.devices`.
 3. CI will discover the new host automatically from `nixosConfigurations`
-4. Test with `nix run .#vm -- newhost`
-5. If the host is already running NixOS, prefer an in-place deploy:
+4. If the host is already running NixOS, prefer an in-place deploy:
    `nixos-rebuild switch --flake .#newhost --target-host root@<ip>`
-6. Use `nixos-anywhere` only for a fresh install or an explicit reprovision/repartition:
+5. Use `nixos-anywhere` only for a fresh install or an explicit reprovision/repartition:
    `nix run github:nix-community/nixos-anywhere -- --flake .#newhost --target-host root@<ip>`
-7. After first boot: add host SSH key to `secrets.nix` and rekey
+6. After first boot: add host SSH key to `secrets.nix` and rekey
 
 ## Host Notes
 
 - Bootloader policy: prefer **Limine** across the fleet.
     - EFI hosts should generally include `den.aspects.boot-limine-efi`.
     - BIOS-only hosts should generally include `den.aspects.boot-limine-bios` and set the install device per-host.
-- `nixos2` uses Limine with `/efi` as its EFI system partition and is configured with static IPv4 `10.178.76.45/24` via `systemd-networkd`.
-  Default gateway is `10.178.76.1`.
 - `gigahost1` is configured for Limine in BIOS mode, installed to `/dev/sda`.
   Because this is a remote VPS and not EFI, treat bootloader changes here as higher-risk than the EFI hosts.
 
 ## CI
 
 GitHub Actions builds all hosts on push to `main` and pushes closures to [cachix](https://cachix.org). Servers pull from cachix during `system.autoUpgrade`.
+
+## Automated updates
+
+- Renovate currently covers GitHub Actions updates in this repo.
+- A scheduled GitHub Actions workflow refreshes the generated `flake.nix`, runs `nix flake update`, validates with `nix flake check`, builds all hosts, pushes their closures to cachix, and commits the updated `flake.lock` to `main` daily at **00:15 UTC**.
+- Hosts check `github:herobrauni/nix?ref=main` nightly at **04:00 UTC** and apply the already-committed `flake.lock`.
+- `system.autoUpgrade.upgrade = false` is intentional: hosts do **not** advance flake inputs on their own; only the repo moves the lock file forward.
+- If a new generation needs a reboot because the kernel/initrd changed, the host reboots automatically inside the configured reboot window.
+- You can also trigger the lock update manually from the **Actions → Update flake.lock** workflow.

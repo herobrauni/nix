@@ -109,8 +109,8 @@ Also ensure mountpoints like `/persist`, `/nix`, and, if needed, `/boot` are cre
 
 ## Repo examples
 
-- `modules/hosts/nixos2/default.nix` — UEFI + Limine + in-place impermanence
 - `modules/hosts/crunchbits1/default.nix` — BIOS + Limine + in-place impermanence
+- `modules/hosts/gc5/default.nix` — BIOS + Limine + in-place impermanence
 - `modules/hosts/gigahost1/default.nix` — fresh single-disk BIOS VPS
 
 ## Rule of thumb
