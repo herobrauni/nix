@@ -4,6 +4,7 @@
   den.aspects.crunchbits1 = {
     includes = [
       den.aspects.base-server
+      den.aspects.boot-limine-bios
       den.aspects.impermanence
       den.aspects.networkd-base
       den.aspects.netbird
@@ -32,9 +33,8 @@
       # Reuse the existing ext4 root filesystem as /persist, keep / on tmpfs,
       # and bind-mount persistent subtrees back into place.
       #
-      # Keep GRUB for the in-place migration so the first nixos-rebuild does not
-      # also attempt a remote bootloader migration. We can switch this host to
-      # Limine later if explicitly desired.
+      # This host is migrated in-place, but we switch the BIOS bootloader to
+      # Limine as part of the same deployment.
       fileSystems."/" = lib.mkForce {
         fsType = "tmpfs";
         options = [
@@ -59,10 +59,8 @@
         neededForBoot = true;
       };
 
-      boot.loader.grub = {
-        enable = true;
-        device = "/dev/vda";
-      };
+      boot.loader.grub.enable = lib.mkForce false;
+      boot.loader.limine.biosDevice = "/dev/vda";
       boot.kernelParams = [
         "console=ttyS0,115200n8"
         "console=tty0"
