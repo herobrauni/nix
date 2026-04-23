@@ -23,7 +23,7 @@ let
   nixos = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAig9U9QbDqK+pOklbYOni1MaMTbZALGAvV1L98OzqD0 root@nixos";
   nixos2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBzHy4LmBrl2Cqv2JTKLjhX+JECcaZePx9saKWhA1rGK root@nixos";
   gigahost1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP4zTijNoKXYhh3Qc8gFcq/r9D5pA3QKPH4hZ5gnAwz4";
-  crunchbits1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHGxBe6ZK/2vDs3olmlT8at8srlxUJlpZcOsVKD0dSi6";
+  crunchbits1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIElegCEHEmy9MIsdkOMLMnbL9L+j6xKc2H5X0Q+PLyE3 root@crunchbits1";
   gc5 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK0EqYSa1Kc/yucEBeqoUFmKTGQxyZPL8ESfyJ83jqMY root@nixos-installer";
 
   # All personal keys (for secrets brauni should be able to decrypt locally)
