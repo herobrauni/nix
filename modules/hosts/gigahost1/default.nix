@@ -49,9 +49,6 @@
       };
 
       boot.kernelParams = [ "console=tty0" ];
-      boot.initrd.postDeviceCommands = lib.mkAfter ''
-        mkdir -p /mnt-root/nix
-      '';
 
       # ── Networking (systemd-networkd, static IPv4/IPv6) ──────────
       networking.usePredictableInterfaceNames = false;
