@@ -15,6 +15,12 @@
     hostName = "crunchbits1";
     users.brauni = { };
   };
+  den.hosts.x86_64-linux.gc5 = {
+    aspect = "gc5";
+    hostName = "gc5";
+    singleDisk.device = "/dev/vda";
+    users.brauni = { };
+  };
   den.hosts.x86_64-linux.nixos2 = {
     aspect = "nixos2";
     hostName = "nixos2";

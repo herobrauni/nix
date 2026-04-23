@@ -1,4 +1,4 @@
-{ inputs, ... }:
+{ inputs, lib, ... }:
 {
   # Shared impermanence aspect.
   # Hosts that include this get tmpfs root with persistent /persist.
@@ -22,13 +22,12 @@
           ];
           files = [
             "/etc/machine-id"
-            "/etc/adjtime"
           ];
         };
 
-        # Create mountpoints early so systemd doesn't complain
-        boot.initrd.postDeviceCommands = ''
-          mkdir -p /mnt-root/persist
+        # Create mountpoints early so systemd and impermanence units don't fail.
+        boot.initrd.postDeviceCommands = lib.mkAfter ''
+          mkdir -p /mnt-root/persist /mnt-root/persist/etc
         '';
       };
 

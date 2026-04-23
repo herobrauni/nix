@@ -1,4 +1,9 @@
-{ inputs, den, ... }:
+{
+  inputs,
+  den,
+  lib,
+  ...
+}:
 {
   # Shared agenix aspect.
   # All hosts get the agenix NixOS module and decrypt with the host SSH key.
@@ -8,7 +13,19 @@
     nixos = {
       imports = [ inputs.agenix.nixosModules.default ];
 
-      age.identityPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+      age = {
+        identityPaths = [
+          "/persist/etc/ssh/ssh_host_ed25519_key"
+          "/persist/etc/ssh/ssh_host_rsa_key"
+        ];
+      }
+      // lib.optionalAttrs (builtins.pathExists ../../secrets/shared/atuin-password.age) {
+        secrets.atuin-password = {
+          file = ../../secrets/shared/atuin-password.age;
+          owner = "brauni";
+          mode = "0400";
+        };
+      };
     };
   };
 }
