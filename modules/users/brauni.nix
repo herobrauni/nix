@@ -41,7 +41,6 @@
             --password "$password" \
             --key "$key"
 
-          ${atuinBin} sync
           ${atuinBin} status >/dev/null
         '';
       in
