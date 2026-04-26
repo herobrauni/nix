@@ -15,20 +15,14 @@
 # Run `ssh-keyscan <host>` and add the ed25519 key below.
 
 let
-  # brauni's personal keys (from https://github.com/herobrauni.keys)
-  brauni = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJmpZL3J2RqRK7ynIgowaZBKzI+EiuCGmwB6l0AxLk1v";
-  brauni2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFfL/A140RdlJ1LQQR/lwtPwf0MAn5haqDdXGKWsW8sa";
+  sshKeys = import ./lib/ssh-keys.nix;
 
   # Host keys — populate after first deploy:
   gigahost1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP4zTijNoKXYhh3Qc8gFcq/r9D5pA3QKPH4hZ5gnAwz4";
   crunchbits1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIElegCEHEmy9MIsdkOMLMnbL9L+j6xKc2H5X0Q+PLyE3 root@crunchbits1";
   gc5 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK0EqYSa1Kc/yucEBeqoUFmKTGQxyZPL8ESfyJ83jqMY root@nixos-installer";
 
-  # All personal keys (for secrets brauni should be able to decrypt locally)
-  personal = [
-    brauni
-    brauni2
-  ];
+  personal = sshKeys.brauni;
 in
 {
   "secrets/shared/atuin-password.age".publicKeys = personal ++ [
