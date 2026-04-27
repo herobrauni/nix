@@ -6,6 +6,7 @@
     lib.mkMerge [
       {
         services.netbird.enable = true;
+        services.netbird.clients.default.config.ServerSSHAllowed = true;
       }
 
       (lib.optionalAttrs (options.environment ? persistence) {
