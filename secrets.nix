@@ -21,6 +21,7 @@ let
   gigahost1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP4zTijNoKXYhh3Qc8gFcq/r9D5pA3QKPH4hZ5gnAwz4";
   crunchbits1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIElegCEHEmy9MIsdkOMLMnbL9L+j6xKc2H5X0Q+PLyE3 root@crunchbits1";
   gc5 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK0EqYSa1Kc/yucEBeqoUFmKTGQxyZPL8ESfyJ83jqMY root@nixos-installer";
+  alpha1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICeEyFsKYw3YBGVtBsDoSjzy/vr5wkkuJAtzYxN6gnQl root@alpha1";
 
   personal = sshKeys.brauni;
 in
@@ -29,11 +30,13 @@ in
     gigahost1
     crunchbits1
     gc5
+    alpha1
   ];
   "secrets/shared/atuin-key.age".publicKeys = personal ++ [
     gigahost1
     crunchbits1
     gc5
+    alpha1
   ];
   "modules/hosts/gigahost1/secrets/beszel.age".publicKeys = personal ++ [ gigahost1 ];
   "modules/hosts/gigahost1/secrets/netbird-setup-key.age".publicKeys = personal ++ [ gigahost1 ];
@@ -41,6 +44,8 @@ in
   "modules/hosts/crunchbits1/secrets/netbird-setup-key.age".publicKeys = personal ++ [ crunchbits1 ];
   "modules/hosts/gc5/secrets/beszel.age".publicKeys = personal ++ [ gc5 ];
   "modules/hosts/gc5/secrets/netbird-setup-key.age".publicKeys = personal ++ [ gc5 ];
+  "modules/hosts/alpha1/secrets/beszel.age".publicKeys = personal ++ [ alpha1 ];
+  "modules/hosts/alpha1/secrets/netbird-setup-key.age".publicKeys = personal ++ [ alpha1 ];
 
   # Example shared secret
   # "secrets/shared/example.age".publicKeys = personal ++ [ gigahost1 ];

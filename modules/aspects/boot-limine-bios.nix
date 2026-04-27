@@ -17,6 +17,25 @@
   # Shared Limine bootloader defaults for BIOS-based hosts.
   den.aspects.boot-limine-bios = {
     nixos = {
+      # nixpkgs-unstable is currently on Limine 11.4.0, which has a known
+      # legacy BIOS regression that can stop boot with "limine integrity error".
+      # Keep BIOS hosts on at least 11.4.1 until the input catches up.
+      nixpkgs.overlays = [
+        (final: prev: {
+          limine =
+            if lib.versionOlder prev.limine.version "11.4.1" then
+              prev.limine.overrideAttrs (_old: {
+                version = "11.4.1";
+                src = final.fetchurl {
+                  url = "https://github.com/Limine-Bootloader/Limine/releases/download/v11.4.1/limine-11.4.1.tar.gz";
+                  hash = "sha256-sTmjVVhOb2EOhohW/SMJgrM8HT5t6afq1ekv+6eZNuY=";
+                };
+              })
+            else
+              prev.limine;
+        })
+      ];
+
       boot.loader.limine = {
         enable = true;
         efiSupport = false;

@@ -86,6 +86,7 @@ Also ensure mountpoints like `/persist`, `/nix`, and, if needed, `/boot` are cre
 ### Fresh install
 
 - Run `nixos-anywhere` against the Debian host and let the flake install NixOS.
+- Some provider Debian images use a non-standard SSH port before conversion; AlphaVPS/Debian hosts may listen on port `666`, so pass `--ssh-port 666` when needed.
 
 ### In-place install
 

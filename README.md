@@ -134,6 +134,7 @@ Important:
    `nixos-rebuild switch --flake .#newhost --target-host root@<ip>`
 5. Use `nixos-anywhere` only for a fresh install or an explicit reprovision/repartition:
    `nix run github:nix-community/nixos-anywhere -- --flake .#newhost --target-host root@<ip>`
+    - Some provider Debian images use a non-standard SSH port before conversion; AlphaVPS/Debian hosts may listen on port `666`, so pass `--ssh-port 666` when needed.
 6. After first boot: add host SSH key to `secrets.nix` and rekey
 
 ## Host Notes
