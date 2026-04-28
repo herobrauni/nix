@@ -11,7 +11,13 @@
     lib.mkMerge [
       {
         services.netbird.enable = true;
-        services.netbird.clients.default.config.ServerSSHAllowed = true;
+        services.netbird.clients.default = {
+          config.ServerSSHAllowed = true;
+          login = {
+            enable = true;
+            setupKeyFile = config.age.secrets."netbird-setup-key".path;
+          };
+        };
 
         # NetBird SSH shells call exec.LookPath("login") from the daemon.
         # NixOS service PATHs do not include login by default; see:

@@ -46,6 +46,22 @@
                 mode = "0400";
               };
             })
+            // (lib.optionalAttrs (builtins.pathExists ../../secrets/shared/beszel.age) {
+              beszel = {
+                file = ../../secrets/shared/beszel.age;
+                owner = "root";
+                group = "root";
+                mode = "0400";
+              };
+            })
+            // (lib.optionalAttrs (builtins.pathExists ../../secrets/shared/netbird-setup-key.age) {
+              "netbird-setup-key" = {
+                file = ../../secrets/shared/netbird-setup-key.age;
+                owner = "root";
+                group = "root";
+                mode = "0400";
+              };
+            })
           );
         };
       };

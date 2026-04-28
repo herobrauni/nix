@@ -71,8 +71,9 @@ Managed with [agenix](https://github.com/ryantm/agenix). See `secrets.nix` for r
 ### Layout
 
 - shared encrypted files live under `secrets/shared/`
-- host-specific encrypted files live under `modules/hosts/<hostname>/secrets/`
-- host-specific secret declarations also live under `modules/hosts/<hostname>/secrets/*.nix`
+- fleet-wide service secrets, such as Beszel and NetBird setup keys, are declared once in `modules/aspects/agenix.nix`
+- host-specific encrypted files, when needed, live under `modules/hosts/<hostname>/secrets/`
+- host-specific secret declarations, when needed, live under `modules/hosts/<hostname>/secrets/*.nix`
 
 ### Commands
 
@@ -90,11 +91,11 @@ EDITOR=vim nix run github:ryantm/agenix -- --rekey
 ### How secrets are wired
 
 1. Add the encrypted file path to `secrets.nix` with the allowed recipient keys.
-2. For a host-specific secret, add a companion module in `modules/hosts/<hostname>/secrets/<name>.nix`.
-3. In that module, declare `age.secrets.<name>.file = ./<name>.age;` and any owner/group/mode settings.
+2. For a fleet-wide shared secret, add it to `secrets/shared/` and declare it once in `modules/aspects/agenix.nix`.
+3. For a host-specific secret, add a companion module in `modules/hosts/<hostname>/secrets/<name>.nix`.
 4. Consume the realized secret via `config.age.secrets.<name>.path` or `osConfig.age.secrets.<name>.path`.
 
-Host-specific secret modules are picked up automatically because the repo auto-imports `.nix` files from `modules/`.
+Host-specific secret modules are picked up automatically because the repo auto-imports `.nix` files from `modules/`. Use them only for genuinely per-host credentials.
 
 Example host-specific secret module:
 

@@ -26,33 +26,26 @@ let
   crunchbits1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFq9hgSw5ZPyYzN4EjYLbq35ckxKDcXWyQ0CT4CcFBLq root@crunchbits1";
   gc5 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK0EqYSa1Kc/yucEBeqoUFmKTGQxyZPL8ESfyJ83jqMY root@nixos-installer";
   alpha1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICeEyFsKYw3YBGVtBsDoSjzy/vr5wkkuJAtzYxN6gnQl root@alpha1";
+  axushost1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMNOIaAD21Om9qq4/zGaKuf+AC3kYfg4jqdGc+jK+J3Z root@axushost1";
 
   personal = sshKeys.brauni;
+
+  fleetHosts = [
+    gigahost1
+    crunchbits1
+    gc5
+    alpha1
+    axushost1
+  ];
 in
 {
-  "secrets/shared/atuin-password.age".publicKeys = personal ++ [
-    gigahost1
-    crunchbits1
-    gc5
-    alpha1
-  ];
-  "secrets/shared/atuin-key.age".publicKeys = personal ++ [
-    gigahost1
-    crunchbits1
-    gc5
-    alpha1
-  ];
-  "modules/hosts/gigahost1/secrets/beszel.age".publicKeys = personal ++ [ gigahost1 ];
-  "modules/hosts/gigahost1/secrets/netbird-setup-key.age".publicKeys = personal ++ [ gigahost1 ];
-  "modules/hosts/crunchbits1/secrets/beszel.age".publicKeys = personal ++ [ crunchbits1 ];
-  "modules/hosts/crunchbits1/secrets/netbird-setup-key.age".publicKeys = personal ++ [ crunchbits1 ];
-  "modules/hosts/gc5/secrets/beszel.age".publicKeys = personal ++ [ gc5 ];
-  "modules/hosts/gc5/secrets/netbird-setup-key.age".publicKeys = personal ++ [ gc5 ];
-  "modules/hosts/alpha1/secrets/beszel.age".publicKeys = personal ++ [ alpha1 ];
-  "modules/hosts/alpha1/secrets/netbird-setup-key.age".publicKeys = personal ++ [ alpha1 ];
+  "secrets/shared/atuin-password.age".publicKeys = personal ++ fleetHosts;
+  "secrets/shared/atuin-key.age".publicKeys = personal ++ fleetHosts;
+  "secrets/shared/beszel.age".publicKeys = personal ++ fleetHosts;
+  "secrets/shared/netbird-setup-key.age".publicKeys = personal ++ fleetHosts;
 
   # Example shared secret
-  # "secrets/shared/example.age".publicKeys = personal ++ [ gigahost1 ];
+  # "secrets/shared/example.age".publicKeys = personal ++ fleetHosts;
 
   # Example host-specific secret
   # "modules/hosts/gigahost1/secrets/example.age".publicKeys = personal ++ [ gigahost1 ];
