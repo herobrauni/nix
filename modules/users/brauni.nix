@@ -32,19 +32,36 @@ in
           export XDG_STATE_HOME="$HOME/.local/state"
 
           ${pkgs.coreutils}/bin/mkdir -p "$XDG_DATA_HOME/atuin" "$XDG_STATE_HOME"
-
-          if ${atuinBin} status >/dev/null 2>&1; then
-            exit 0
-          fi
+          export ATUIN_SESSION="$(${atuinBin} uuid)"
 
           password="$(${pkgs.coreutils}/bin/tr -d '\n' < ${config.age.secrets."atuin-password".path})"
           key="$(${pkgs.coreutils}/bin/tr -d '\n' < ${config.age.secrets."atuin-key".path})"
+          current_key="$({ ${atuinBin} key --base64 2>/dev/null || true; } | ${pkgs.coreutils}/bin/tr -d '\n')"
+          key_mismatch=0
+
+          if ${atuinBin} status >/dev/null 2>&1 && [ "$current_key" = "$key" ]; then
+            ${atuinBin} sync >/dev/null
+            ${atuinBin} status >/dev/null
+            exit 0
+          fi
+
+          if [ -n "$current_key" ] && [ "$current_key" != "$key" ]; then
+            echo "Atuin key mismatch; resetting local Atuin login and purging undecryptable local records"
+            key_mismatch=1
+            ${atuinBin} logout >/dev/null 2>&1 || true
+            ${pkgs.coreutils}/bin/rm -f "$XDG_DATA_HOME/atuin/key"
+          fi
 
           ${atuinBin} login \
             --username brauni \
             --password "$password" \
             --key "$key"
 
+          if [ "$key_mismatch" = 1 ]; then
+            ${atuinBin} store purge >/dev/null 2>&1 || true
+          fi
+
+          ${atuinBin} sync >/dev/null
           ${atuinBin} status >/dev/null
         '';
       in
@@ -56,6 +73,10 @@ in
           after = [ "network-online.target" ];
           wants = [ "network-online.target" ];
           wantedBy = [ "multi-user.target" ];
+          unitConfig.ConditionPathExists = [
+            config.age.secrets."atuin-password".path
+            config.age.secrets."atuin-key".path
+          ];
           serviceConfig = {
             Type = "oneshot";
             User = "brauni";
@@ -106,6 +127,7 @@ in
             sync_address = "https://atuin.brauni.dev";
             sync_frequency = "5m";
             search_mode = "prefix";
+            sync.records = true;
           };
         };
 
