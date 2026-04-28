@@ -1,8 +1,13 @@
 { ... }:
 {
-  # Shared Nix daemon and binary cache policy.
+  # Shared Nix daemon, binary cache policy, and Nix CLI helpers.
   den.aspects.nix-core = {
     nixos = {
+      programs.nh = {
+        enable = true;
+        flake = "github:herobrauni/nix";
+      };
+
       nix.settings = {
         auto-optimise-store = true;
         experimental-features = [
