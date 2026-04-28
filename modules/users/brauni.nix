@@ -117,7 +117,12 @@ in
           tree
         ];
 
-        programs.fish.enable = true;
+        programs.fish = {
+          enable = true;
+          interactiveShellInit = ''
+            ${lib.getExe pkgs.atuin} hex init fish | source
+          '';
+        };
 
         programs.atuin = {
           enable = true;
@@ -126,8 +131,14 @@ in
             auto_sync = true;
             sync_address = "https://atuin.brauni.dev";
             sync_frequency = "5m";
-            search_mode = "prefix";
+            search_mode = "daemon-fuzzy";
             sync.records = true;
+            dotfiles.enabled = true;
+            daemon = {
+              enabled = true;
+              autostart = true;
+            };
+            ai.enabled = true;
           };
         };
 
