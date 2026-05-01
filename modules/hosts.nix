@@ -44,4 +44,9 @@
     singleDisk.device = "/dev/vda";
     users.brauni = { };
   };
+  den.hosts.x86_64-linux.onidel1 = {
+    hostName = "onidel1";
+    singleDisk.device = "/dev/vda";
+    users.brauni = { };
+  };
 }
