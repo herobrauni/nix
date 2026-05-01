@@ -29,4 +29,9 @@
     singleDisk.device = "/dev/vda";
     users.brauni = { };
   };
+  den.hosts.x86_64-linux.bero1 = {
+    hostName = "bero1";
+    singleDisk.device = "/dev/sda";
+    users.brauni = { };
+  };
 }
