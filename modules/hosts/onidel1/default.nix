@@ -1,10 +1,10 @@
-{ den, lib, ... }:
+{ den, inputs, lib, ... }:
 {
-  # onidel1 — VPS (OneDel) at 185.232.84.12.
+  # onidel1 — OneDel VPS at 185.232.84.12.
   den.aspects.onidel1 = {
     includes = [
       den.aspects.base-server
-      den.aspects.single-disk-bios-vps
+      den.aspects.boot-limine-bios
       den.aspects.impermanence
       den.aspects.networkd-base
       den.aspects.netbird
@@ -12,24 +12,64 @@
     ];
 
     nixos = {
+      imports = [ inputs.disko.nixosModules.disko ];
+
       system.stateVersion = "25.11";
 
       # ── Hardware ──────────────────────────────────────────────────
       boot.initrd.availableKernelModules = [
+        "ahci"
         "ata_piix"
-        "uhci_hcd"
+        "sd_mod"
+        "sr_mod"
+        "virtio_blk"
         "virtio_pci"
         "virtio_scsi"
-        "sd_mod"
-        "ahci"
-        "xen_blkfront"
         "vmw_pvscsi"
+        "xen_blkfront"
       ];
       boot.kernelModules = [ "kvm-amd" ];
 
       # ── Filesystems / bootloader ────────────────────────────────
-      # Reuse the single ext4 partition as /persist, keep / on tmpfs,
-      # and bind-mount /persist/nix into /nix.
+      boot.loader.limine = {
+        biosDevice = "/dev/vda";
+        partitionIndex = 1;
+      };
+
+      disko.devices = {
+        disk.main = {
+          type = "disk";
+          device = "/dev/vda";
+          content = {
+            type = "gpt";
+            partitions = {
+              bios = {
+                size = "4M";
+                type = "EF02";
+              };
+              boot = {
+                size = "512M";
+                type = "EF00";
+                content = {
+                  type = "filesystem";
+                  format = "vfat";
+                  mountpoint = "/boot";
+                  mountOptions = [ "umask=0077" ];
+                };
+              };
+              root = {
+                size = "100%";
+                content = {
+                  type = "filesystem";
+                  format = "ext4";
+                  mountpoint = "/";
+                };
+              };
+            };
+          };
+        };
+      };
+
       fileSystems."/" = lib.mkForce {
         fsType = "tmpfs";
         options = [
@@ -41,6 +81,7 @@
         device = "/dev/disk/by-partlabel/disk-main-root";
         fsType = "ext4";
       };
+      fileSystems."/boot".neededForBoot = true;
       fileSystems."/nix" = {
         device = "/persist/nix";
         fsType = "none";
@@ -59,9 +100,6 @@
 
       environment.persistence."/persist".directories = [
         "/root"
-
-        # Beszel keeps its fingerprint / credentials state under /var/lib/beszel-agent.
-        # Reuse the pre-impermanence state from the old root now mounted at /persist.
         "/var/lib/beszel-agent"
       ];
 
@@ -93,5 +131,4 @@
       };
     };
   };
-
 }
