@@ -16,11 +16,13 @@ in
         config,
         lib,
         pkgs,
+        options,
         ...
       }:
       let
         hasAtuinSecrets =
-          builtins.hasAttr "atuin-password" config.age.secrets
+          config ? age
+          && builtins.hasAttr "atuin-password" config.age.secrets
           && builtins.hasAttr "atuin-key" config.age.secrets;
         atuinBin = lib.getExe pkgs.atuin;
         atuinAutoLogin = pkgs.writeShellScript "atuin-auto-login" ''

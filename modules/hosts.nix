@@ -24,4 +24,9 @@
     singleDisk.device = "/dev/vda";
     users.brauni = { };
   };
+  den.hosts.x86_64-linux.axushost2 = {
+    hostName = "axushost2";
+    singleDisk.device = "/dev/vda";
+    users.brauni = { };
+  };
 }
