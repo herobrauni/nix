@@ -29,8 +29,8 @@ let
   axushost1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMNOIaAD21Om9qq4/zGaKuf+AC3kYfg4jqdGc+jK+J3Z root@axushost1";
   axushost2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG+teFx3Y7d8G+chozu5Q10n1Yn2mjD44u4DdF08Rt1n root@axushost2";
   bero1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMzjGg0OUxUBcuAHsPFPk4FPYacWuR3wFBDF1T/k2Dox root@bero1";
+  gc3 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGlcLQTDze6L2oCui8IWviis8RwwesEj9W6+ixVCsBaq root@gc3";
   gc1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICcGHM8NWXQj22c1uBhMuAeI63De/4nqhwWto4bjIAlq root@gc1";
-  gc3 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA root@gc3"; # placeholder — replace after first deploy
 
   personal = sshKeys.brauni;
 
