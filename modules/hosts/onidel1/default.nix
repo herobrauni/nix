@@ -1,4 +1,9 @@
-{ den, inputs, lib, ... }:
+{
+  den,
+  inputs,
+  lib,
+  ...
+}:
 {
   # onidel1 — OneDel VPS at 185.232.84.12.
   den.aspects.onidel1 = {
