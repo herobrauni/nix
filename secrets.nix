@@ -32,6 +32,7 @@ let
   gc3 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGlcLQTDze6L2oCui8IWviis8RwwesEj9W6+ixVCsBaq root@gc3";
   onidel1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKmsHhIiXyk3gwe5yaBcssW0pI/MKbUBf6NcnvKcrWaJ root@onidel1";
   onidel2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICn0cxrT+kUfgLzeAfMQ266QcVugrote7usipOw9Uqs5 root@onidel2";
+  terabit1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA root@terabit1"; # placeholder
   gc1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICcGHM8NWXQj22c1uBhMuAeI63De/4nqhwWto4bjIAlq root@gc1";
 
   personal = sshKeys.brauni;
@@ -48,6 +49,7 @@ let
     gc3
     onidel1
     onidel2
+    terabit1
   ];
 in
 {

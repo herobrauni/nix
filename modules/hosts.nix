@@ -54,4 +54,9 @@
     singleDisk.device = "/dev/vda";
     users.brauni = { };
   };
+  den.hosts.x86_64-linux.terabit1 = {
+    hostName = "terabit1";
+    singleDisk.device = "/dev/vda";
+    users.brauni = { };
+  };
 }
