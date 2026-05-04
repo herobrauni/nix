@@ -16,8 +16,15 @@ concurrency:
 
 jobs:
   update:
-    runs-on: ubuntu-latest
+    runs-on: nix-runner
     timeout-minutes: 120
+    env:
+      NIKS3_SERVER_URL: http://niks3.niks3.svc.cluster.local:5751
+      NIX_CONFIG: |
+        experimental-features = nix-command flakes
+        accept-flake-config = true
+        extra-substituters = http://niks3.niks3.svc.cluster.local:5751
+        extra-trusted-public-keys = SIGNING_KEY:L2S1rOofwctOTq+ygU/myKHJGhuL2qu/hzAOD1q2SG4=
     steps:
       # Pinned to immutable commit SHAs for supply-chain safety.
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -26,13 +33,6 @@ jobs:
           fetch-depth: 0
 
       - uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
-
-      # Cachix is the binary cache for this repo; publish updated host closures
-      # before pushing the new lock file to main.
-      - uses: cachix/cachix-action@1eb2ef646ac0255473d23a5907ad7b04ce94065c # v17
-        with:
-          name: brauni
-          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
 
       - name: Configure git author
         run: |
@@ -57,11 +57,35 @@ jobs:
           echo "changed=true" >> "$GITHUB_OUTPUT"
           git diff --stat -- flake.nix flake.lock
 
+      - name: Build Niks3 client
+        id: niks3
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          path=$(nix build --no-link --print-out-paths github:Mic92/niks3/v1.4.0#niks3)
+          echo "path=${path}" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare Niks3 auth token
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          NIKS3_API_TOKEN: ${{ secrets.NIKS3_API_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${NIKS3_API_TOKEN}" ]; then
+            echo "NIKS3_API_TOKEN GitHub secret is required"
+            exit 1
+          fi
+
+          token_file="$RUNNER_TEMP/niks3-token"
+          printf '%s' "$NIKS3_API_TOKEN" > "$token_file"
+          chmod 600 "$token_file"
+          echo "NIKS3_AUTH_TOKEN_FILE=${token_file}" >> "$GITHUB_ENV"
+
       - name: Run flake checks
         if: steps.changes.outputs.changed == 'true'
         run: nix flake check
 
-      - name: Build and push full closure for all discovered NixOS hosts
+      - name: Build all discovered NixOS hosts
         if: steps.changes.outputs.changed == 'true'
         run: |
           mapfile -t hosts < <(
@@ -80,8 +104,15 @@ jobs:
             targets+=(".#nixosConfigurations.${host}.config.system.build.toplevel")
           done
 
-          nix build "${targets[@]}"
-          cachix push brauni $(nix path-info --recursive "${targets[@]}")
+          nix build --no-link --print-out-paths "${targets[@]}" | tee "$RUNNER_TEMP/toplevel-paths.txt"
+
+      - name: Push host closures to Niks3
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          set -euo pipefail
+
+          mapfile -t outputs < "$RUNNER_TEMP/toplevel-paths.txt"
+          "${{ steps.niks3.outputs.path }}/bin/niks3" push "${outputs[@]}"
 
       - name: Commit and push flake updates
         if: steps.changes.outputs.changed == 'true'

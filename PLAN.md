@@ -85,10 +85,10 @@ nix/
 - hosts decrypt at activation using `/etc/ssh/ssh_host_ed25519_key`
 - user/home config can consume host-provided secrets through `osConfig.age.secrets.<name>.path`
 
-### Cachix + GitHub Actions
+### Niks3 + GitHub Actions
 
-- On push to `main`, GitHub Actions builds all hosts and pushes to cachix (`brauni`)
-- Secret name for GitHub: `CACHIX_AUTH_TOKEN`
+- On push to `main`, GitHub Actions builds all hosts and pushes to Niks3 (`https://niks3.brauni.dev`)
+- Secret name for GitHub: `NIKS3_API_TOKEN`
 - Workflow: `.github/workflows/build-and-push.yml`
 
 ## Operational Notes
@@ -126,5 +126,5 @@ nix run github:nix-community/nixos-anywhere -- --flake .#<host> --target-host ro
 ## TODO
 
 - [ ] Remove or refresh any remaining stale host references outside active docs
-- [ ] Add `CACHIX_AUTH_TOKEN` to GitHub repo secrets if not already present
+- [ ] Keep `NIKS3_API_TOKEN` configured as a GitHub repo secret
 - [ ] Consider adding a dedicated deploy helper for active hosts

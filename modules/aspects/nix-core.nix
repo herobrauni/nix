@@ -25,11 +25,11 @@
         ];
         substituters = [
           "https://cache.nixos.org"
-          "https://brauni.cachix.org"
+          "https://niks3.brauni.dev"
         ];
         trusted-public-keys = [
           "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-          "brauni.cachix.org-1:AK1gTT3vQZQh2OqWS4rh+DjV9lOlqa834O5pssx2rUw="
+          "SIGNING_KEY:L2S1rOofwctOTq+ygU/myKHJGhuL2qu/hzAOD1q2SG4="
         ];
       };
     };
