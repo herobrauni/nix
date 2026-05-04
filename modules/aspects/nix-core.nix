@@ -10,6 +10,11 @@
 
       nix.settings = {
         auto-optimise-store = true;
+
+        # Never build locally — always pull from substituters.
+        # This avoids OOM on small VPS hosts during nh os switch.
+        max-jobs = 0;
+
         experimental-features = [
           "nix-command"
           "flakes"
