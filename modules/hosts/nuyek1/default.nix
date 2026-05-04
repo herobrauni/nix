@@ -1,4 +1,9 @@
-{ den, inputs, lib, ... }:
+{
+  den,
+  inputs,
+  lib,
+  ...
+}:
 {
   # nuyek1 — Nuyek VPS at 209.205.228.80.
   den.aspects.nuyek1 = {
