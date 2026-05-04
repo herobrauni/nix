@@ -35,6 +35,7 @@ let
   terabit1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFbiH8mAhL5vwz8WawRUP/LdENxgySaLspe4SYgqoO4E root@terabit1";
   deluxhost2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGBB6UhpN3obR5ulPbB3yPmUNJxoJg2GFEDYzLDgKOuc root@deluxhost2";
   hostsailor1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILR61W/XemRLXwydGknvEKd93u/6rBFfKNTRRVXCb7Kd root@hostsailor1";
+  nuyek1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA root@nuyek1"; # placeholder
   gc1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICcGHM8NWXQj22c1uBhMuAeI63De/4nqhwWto4bjIAlq root@gc1";
 
   personal = sshKeys.brauni;
@@ -54,6 +55,7 @@ let
     terabit1
     deluxhost2
     hostsailor1
+    nuyek1
   ];
 in
 {
