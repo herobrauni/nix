@@ -2,8 +2,9 @@ name: Update flake.lock
 
 on:
   schedule:
-    # 00:15 UTC daily, leaving plenty of time before hosts poll main at 04:00 UTC.
-    - cron: "15 0 * * *"
+    # 03:00 UTC daily, ensuring the new flake.lock is on main before hosts
+    # auto-upgrade at 04:00 UTC (with up to 30 min randomised delay).
+    - cron: "0 3 * * *"
   workflow_dispatch:
 
 permissions:
