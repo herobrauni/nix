@@ -64,4 +64,9 @@
     singleDisk.device = "/dev/vda";
     users.brauni = { };
   };
+  den.hosts.x86_64-linux.hostsailor1 = {
+    hostName = "hostsailor1";
+    singleDisk.device = "/dev/vda";
+    users.brauni = { };
+  };
 }
