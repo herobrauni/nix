@@ -59,4 +59,9 @@
     singleDisk.device = "/dev/vda";
     users.brauni = { };
   };
+  den.hosts.x86_64-linux.deluxhost2 = {
+    hostName = "deluxhost2";
+    singleDisk.device = "/dev/vda";
+    users.brauni = { };
+  };
 }
