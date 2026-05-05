@@ -16,6 +16,7 @@
 
       # ── Hardware ──────────────────────────────────────────────────
       boot.initrd.availableKernelModules = [
+        "ena"
         "virtio_pci"
         "virtio_scsi"
         "sd_mod"
@@ -42,7 +43,9 @@
       };
 
       boot.kernelParams = [
-        "console=ttyAMA0"
+        "console=ttyS0,115200n8"
+        "console=ttyAMA0,115200n8"
+        "console=tty0"
       ];
 
       environment.persistence."/persist".directories = [
