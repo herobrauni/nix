@@ -15,6 +15,12 @@
         # This avoids OOM on small VPS hosts during nh os switch.
         max-jobs = 0;
 
+        # NixOS generates several host-specific trivial derivations with
+        # allowSubstitutes = false / preferLocalBuild = true. CI still pushes
+        # them to Niks3, so force Nix to accept substitutes for them instead of
+        # trying (and failing) to build with max-jobs = 0.
+        always-allow-substitutes = true;
+
         experimental-features = [
           "nix-command"
           "flakes"
