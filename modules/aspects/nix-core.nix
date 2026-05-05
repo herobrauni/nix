@@ -10,6 +10,11 @@
 
       nix.settings = {
         auto-optimise-store = true;
+        accept-flake-config = true;
+
+        # Avoid stale cache misses when a host checks for a new generation before
+        # CI has finished pushing that generation to Niks3.
+        narinfo-cache-negative-ttl = 0;
 
         # Never build locally — always pull from substituters.
         # This avoids OOM on small VPS hosts during nh os switch.

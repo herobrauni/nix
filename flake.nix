@@ -3,6 +3,12 @@
 {
   outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./modules);
 
+  nixConfig = {
+    always-allow-substitutes = true;
+    extra-substituters = [ "https://niks3.brauni.dev" ];
+    extra-trusted-public-keys = [ "SIGNING_KEY:L2S1rOofwctOTq+ygU/myKHJGhuL2qu/hzAOD1q2SG4=" ];
+  };
+
   inputs = {
     agenix = {
       url = "github:ryantm/agenix";
