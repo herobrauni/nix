@@ -42,7 +42,7 @@
           ''
             # Remove files that HM manages and that would conflict with fresh symlinks.
             for f in fish/config.fish atuin/config.toml; do
-              rm -f "${"${homeDirectory}/.config"}/$f"
+              rm -f "${homeDirectory}/.config/$f"
             done
           ''
         );
