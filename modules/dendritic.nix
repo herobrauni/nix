@@ -6,12 +6,15 @@
   ];
 
   flake-file.nixConfig = {
-    # Let hosts with max-jobs = 0 substitute NixOS' trivial
-    # preferLocalBuild derivations before this setting exists in /etc/nix/nix.conf.
+    # Let hosts apply the cache/fallback policy before the new /etc/nix/nix.conf
+    # is active.
     always-allow-substitutes = true;
+    cores = 1;
 
     extra-substituters = [ "https://niks3.brauni.dev" ];
     extra-trusted-public-keys = [ "SIGNING_KEY:L2S1rOofwctOTq+ygU/myKHJGhuL2qu/hzAOD1q2SG4=" ];
+
+    max-jobs = 1;
   };
 
   flake-file.inputs = {

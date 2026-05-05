@@ -5,8 +5,10 @@
 
   nixConfig = {
     always-allow-substitutes = true;
+    cores = 1;
     extra-substituters = [ "https://niks3.brauni.dev" ];
     extra-trusted-public-keys = [ "SIGNING_KEY:L2S1rOofwctOTq+ygU/myKHJGhuL2qu/hzAOD1q2SG4=" ];
+    max-jobs = 1;
   };
 
   inputs = {
