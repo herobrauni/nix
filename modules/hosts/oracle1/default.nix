@@ -2,10 +2,10 @@
 {
   # oracle1 — Oracle Cloud ARM64 at 130.61.82.161 (private 10.0.0.216).
   # In-place conversion from generic NixOS — existing partitions reused.
+  # Uses systemd-boot because the 100M ESP is too small for Limine on ARM64.
   den.aspects.oracle1 = {
     includes = [
       den.aspects.base-server
-      den.aspects.boot-limine-efi
       den.aspects.impermanence
       den.aspects.networkd-base
       den.aspects.netbird
@@ -16,11 +16,15 @@
       system.stateVersion = "25.11";
 
       # ── Bootloader ──────────────────────────────────────────────
-      # Existing ESP at /efi (Oracle Cloud default).
-      boot.loader.efi.efiSysMountPoint = "/efi";
+      # systemd-boot because ARM64 kernel images are ~64MB each and
+      # the 100M Oracle Cloud ESP is too small for Limine.
+      boot.loader = {
+        systemd-boot.enable = true;
+        efi.canTouchEfiVariables = false;
+        efi.efiSysMountPoint = "/efi";
+      };
 
       # ── Filesystems (in-place impermanence) ─────────────────────
-      # Reuse existing ext4 root as /persist, keep / on tmpfs.
       fileSystems."/" = lib.mkForce {
         fsType = "tmpfs";
         options = [
