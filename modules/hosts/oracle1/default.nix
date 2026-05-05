@@ -1,11 +1,10 @@
 { den, lib, ... }:
 {
-  # oracle1 — Oracle Cloud ARM64 at 130.61.82.161 (private 10.0.0.216).
-  # In-place conversion from generic NixOS — existing partitions reused.
-  # Uses systemd-boot because the 100M ESP is too small for Limine on ARM64.
+  # oracle1 — Oracle Cloud ARM64 (aarch64) VM at 130.61.82.161.
   den.aspects.oracle1 = {
     includes = [
       den.aspects.base-server
+      den.aspects.single-disk-efi-vps
       den.aspects.impermanence
       den.aspects.networkd-base
       den.aspects.netbird
@@ -15,16 +14,15 @@
     nixos = {
       system.stateVersion = "25.11";
 
-      # ── Bootloader ──────────────────────────────────────────────
-      # systemd-boot because ARM64 kernel images are ~64MB each and
-      # the 100M Oracle Cloud ESP is too small for Limine.
-      boot.loader = {
-        systemd-boot.enable = true;
-        efi.canTouchEfiVariables = false;
-        efi.efiSysMountPoint = "/efi";
-      };
+      # ── Hardware ──────────────────────────────────────────────────
+      boot.initrd.availableKernelModules = [
+        "virtio_pci"
+        "virtio_scsi"
+        "sd_mod"
+        "virtio_blk"
+      ];
 
-      # ── Filesystems (in-place impermanence) ─────────────────────
+      # ── Impermanence ──────────────────────────────────────────────
       fileSystems."/" = lib.mkForce {
         fsType = "tmpfs";
         options = [
@@ -33,7 +31,7 @@
         ];
       };
       fileSystems."/persist" = {
-        device = "/dev/disk/by-uuid/b0d382ae-5d9c-43c6-ba31-9da10a7d9797";
+        device = "/dev/disk/by-partlabel/disk-main-root";
         fsType = "ext4";
       };
       fileSystems."/nix" = {
@@ -47,20 +45,18 @@
         "console=ttyAMA0"
       ];
 
-      # ── Networking (DHCP behind NAT) ────────────────────────────
-      networking.usePredictableInterfaceNames = false;
-      networking.networkmanager.enable = lib.mkForce false;
-
       environment.persistence."/persist".directories = [
         "/root"
         "/var/lib/beszel-agent"
       ];
 
+      # ── Networking (DHCP behind NAT) ──────────────────────────────
+      networking.usePredictableInterfaceNames = false;
+      networking.networkmanager.enable = lib.mkForce false;
+
       systemd.network.networks."10-eth0" = {
         matchConfig.Name = "eth0";
-        networkConfig = {
-          DHCP = "yes";
-        };
+        networkConfig.DHCP = "yes";
         dhcpV4Config.RouteMTUBytes = 9000;
         linkConfig.RequiredForOnline = true;
       };
