@@ -1,4 +1,9 @@
-{ inputs, den, lib, ... }:
+{
+  inputs,
+  den,
+  lib,
+  ...
+}:
 {
   # Shared Limine bootloader defaults for EFI-based hosts.
   den.aspects.boot-limine-efi = {
