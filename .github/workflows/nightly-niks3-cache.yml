@@ -25,7 +25,7 @@ jobs:
         extra-trusted-public-keys = SIGNING_KEY:L2S1rOofwctOTq+ygU/myKHJGhuL2qu/hzAOD1q2SG4=
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@de0fac2e0d4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
 
@@ -66,12 +66,17 @@ jobs:
           printf 'Discovered hosts: %s\n' "${hosts[*]}"
           printf '%s\n' "${hosts[@]}" > "$RUNNER_TEMP/hosts.txt"
 
-      - name: Build all NixOS hosts
+      - name: Build x86_64 NixOS hosts
         run: |
           mapfile -t hosts < "$RUNNER_TEMP/hosts.txt"
 
           targets=()
           for host in "${hosts[@]}"; do
+            system=$(nix eval --raw ".#nixosConfigurations.${host}.config.nixpkgs.hostPlatform.system" 2>/dev/null || echo "x86_64-linux")
+            if [ "$system" != "x86_64-linux" ]; then
+              echo "Skipping ${host} (${system})"
+              continue
+            fi
             targets+=(".#nixosConfigurations.${host}.config.system.build.toplevel")
           done
 
@@ -81,5 +86,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          mapfile -t outputs < "$RUNNER_TEMP/toplevel-paths.txt"
-          "${{ steps.niks3.outputs.path }}/bin/niks3" push "${outputs[@]}"
+          mapfile -t outputs < "$RUNNER_TEMP/toplevel-paths.txt" 2>/dev/null || true
+          if [ "${#outputs[@]}" -gt 0 ]; then
+            "${{ steps.niks3.outputs.path }}/bin/niks3" push "${outputs[@]}"
+          fi
