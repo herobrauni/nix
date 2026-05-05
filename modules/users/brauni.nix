@@ -74,15 +74,12 @@ in
           description = "Ensure brauni is logged into Atuin";
           after = [ "network-online.target" ];
           wants = [ "network-online.target" ];
-          wantedBy = [ "multi-user.target" ];
-          unitConfig = {
-            ConditionPathExists = [
-              config.age.secrets."atuin-password".path
-              config.age.secrets."atuin-key".path
-            ];
-            # Don't fail boot/switch if this unit fails — the timer will retry.
-            FailureAction = "none";
-          };
+          # Timer-only — not wanted by any target so switch-to-configuration
+          # doesn't restart it and transient auth failures don't fail deploys.
+          unitConfig.ConditionPathExists = [
+            config.age.secrets."atuin-password".path
+            config.age.secrets."atuin-key".path
+          ];
           serviceConfig = {
             Type = "oneshot";
             User = "brauni";
