@@ -74,4 +74,8 @@
     singleDisk.device = "/dev/sda";
     users.brauni = { };
   };
+  den.hosts.aarch64-linux.oracle1 = {
+    hostName = "oracle1";
+    users.brauni = { };
+  };
 }
