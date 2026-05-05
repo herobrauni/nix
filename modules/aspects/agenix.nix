@@ -25,6 +25,13 @@
       nixos = {
         imports = [ inputs.agenix.nixosModules.default ];
 
+        # Ensure SSH host keys exist before agenix tries to decrypt.
+        # sshd-keygen runs in sshd.service's ExecStartPre.
+        systemd.services.nixos-activation = {
+          after = [ "sshd.service" ];
+          wants = [ "sshd.service" ];
+        };
+
         age = {
           identityPaths = [
             "/persist/etc/ssh/ssh_host_ed25519_key"

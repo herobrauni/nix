@@ -75,16 +75,24 @@ in
           after = [ "network-online.target" ];
           wants = [ "network-online.target" ];
           wantedBy = [ "multi-user.target" ];
-          unitConfig.ConditionPathExists = [
-            config.age.secrets."atuin-password".path
-            config.age.secrets."atuin-key".path
-          ];
+          unitConfig = {
+            ConditionPathExists = [
+              config.age.secrets."atuin-password".path
+              config.age.secrets."atuin-key".path
+            ];
+            # Don't fail boot/switch if this unit fails — the timer will retry.
+            FailureAction = "none";
+          };
           serviceConfig = {
             Type = "oneshot";
             User = "brauni";
             WorkingDirectory = "/home/brauni";
             UMask = "0077";
             ExecStart = atuinAutoLogin;
+            # Retry a few times with backoff on transient failures.
+            Restart = "on-failure";
+            RestartSec = "30s";
+            RestartMaxDelaySec = "5min";
           };
         };
 
