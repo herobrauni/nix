@@ -111,11 +111,21 @@ in
 
     homeManager =
       {
+        config,
         pkgs,
         lib,
         ...
       }:
       {
+        # Prevent "would be clobbered" errors when Fish and Atuin
+        # have written to their config files (converting HM symlinks
+        # to regular files). Clean them up before activation links fresh ones.
+        home.activation.removeStaleConfig = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
+          for f in fish/config.fish atuin/config.toml; do
+            rm -f "${config.home.homeDirectory}/.config/$f"
+          done
+        '';
+
         home.packages = with pkgs; [
           git
           vim
