@@ -16,14 +16,16 @@
         # CI has finished pushing that generation to Niks3.
         narinfo-cache-negative-ttl = 0;
 
-        # Never build locally — always pull from substituters.
-        # This avoids OOM on small VPS hosts during nh os switch.
-        max-jobs = 0;
+        # Prefer substitutes from cache, but allow a single small local build as
+        # a fallback. This keeps VPS memory pressure low while avoiding hard
+        # failures when Nix has to realise tiny activation/profile derivations.
+        max-jobs = 1;
+        cores = 1;
 
         # NixOS generates several host-specific trivial derivations with
         # allowSubstitutes = false / preferLocalBuild = true. CI still pushes
-        # them to Niks3, so force Nix to accept substitutes for them instead of
-        # trying (and failing) to build with max-jobs = 0.
+        # them to Niks3, so force Nix to check substitutes for them before
+        # falling back to the one local job above.
         always-allow-substitutes = true;
 
         experimental-features = [
