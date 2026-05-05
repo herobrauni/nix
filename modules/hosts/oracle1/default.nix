@@ -1,6 +1,7 @@
-{ den, inputs, lib, ... }:
+{ den, lib, ... }:
 {
-  # oracle1 — Oracle Cloud ARM64 VPS at 130.61.82.161 (private 10.0.0.216).
+  # oracle1 — Oracle Cloud ARM64 at 130.61.82.161 (private 10.0.0.216).
+  # In-place conversion from generic NixOS — existing partitions reused.
   den.aspects.oracle1 = {
     includes = [
       den.aspects.base-server
@@ -12,54 +13,14 @@
     ];
 
     nixos = {
-      imports = [ inputs.disko.nixosModules.disko ];
-
       system.stateVersion = "25.11";
 
-      # ── Hardware ──────────────────────────────────────────────────
-      boot.initrd.availableKernelModules = [
-        "sd_mod"
-        "sr_mod"
-        "virtio_blk"
-        "virtio_pci"
-        "virtio_scsi"
-        "vmw_pvscsi"
-        "xen_blkfront"
-      ];
+      # ── Bootloader ──────────────────────────────────────────────
+      # Existing ESP at /efi (Oracle Cloud default).
+      boot.loader.efi.efiSysMountPoint = "/efi";
 
-      # ── Filesystems / bootloader ────────────────────────────────
-      boot.loader.efi.efiSysMountPoint = "/boot";
-
-      disko.devices = {
-        disk.main = {
-          type = "disk";
-          device = "/dev/sda";
-          content = {
-            type = "gpt";
-            partitions = {
-              esp = {
-                size = "512M";
-                type = "EF00";
-                content = {
-                  type = "filesystem";
-                  format = "vfat";
-                  mountpoint = "/boot";
-                  mountOptions = [ "umask=0077" ];
-                };
-              };
-              root = {
-                size = "100%";
-                content = {
-                  type = "filesystem";
-                  format = "ext4";
-                  mountpoint = "/";
-                };
-              };
-            };
-          };
-        };
-      };
-
+      # ── Filesystems (in-place impermanence) ─────────────────────
+      # Reuse existing ext4 root as /persist, keep / on tmpfs.
       fileSystems."/" = lib.mkForce {
         fsType = "tmpfs";
         options = [
@@ -68,10 +29,9 @@
         ];
       };
       fileSystems."/persist" = {
-        device = "/dev/disk/by-partlabel/disk-main-root";
+        device = "/dev/disk/by-uuid/b0d382ae-5d9c-43c6-ba31-9da10a7d9797";
         fsType = "ext4";
       };
-      fileSystems."/boot".neededForBoot = true;
       fileSystems."/nix" = {
         device = "/persist/nix";
         fsType = "none";
@@ -83,7 +43,7 @@
         "console=ttyAMA0"
       ];
 
-      # ── Networking (systemd-networkd, DHCP behind NAT) ──────────
+      # ── Networking (DHCP behind NAT) ────────────────────────────
       networking.usePredictableInterfaceNames = false;
       networking.networkmanager.enable = lib.mkForce false;
 
@@ -97,6 +57,7 @@
         networkConfig = {
           DHCP = "yes";
         };
+        dhcpV4Config.RouteMTUBytes = 9000;
         linkConfig.RequiredForOnline = true;
       };
     };
