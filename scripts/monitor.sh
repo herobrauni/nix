@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# Monitor NixOS generation status across all fleet hosts.
+# Usage: ./monitor.sh
+set -euo pipefail
+
+declare -A HOSTS=(
+  [alpha1]=104.152.49.57
+  [axushost1]=185.222.160.23
+  [axushost2]=185.222.160.74
+  [bero1]=5.180.253.70
+  [crunchbits1]=104.36.84.254
+  [deluxhost2]=31.56.7.40
+  [gc1]=92.118.190.11
+  [gc3]=92.118.190.37
+  [gc5]=109.94.170.65
+  [gigahost1]=185.125.169.63
+  [hostsailor1]=185.183.98.121
+  [nuyek1]=209.205.228.80
+  [onidel1]=185.232.84.12
+  [onidel2]=163.61.44.148
+  [oracle1]=130.61.82.161
+  [terabit1]=165.140.203.148
+)
+
+SSH_OPTS="-o ConnectTimeout=4 -o StrictHostKeyChecking=no -o BatchMode=yes"
+TMPDIR=$(mktemp -d)
+trap 'rm -rf "$TMPDIR"' EXIT
+
+for host in "${!HOSTS[@]}"; do
+  ip="${HOSTS[$host]}"
+  (
+    ssh $SSH_OPTS brauni@"$ip" \
+      "bash -c 'd=\$(stat -c %y /run/current-system 2>/dev/null | cut -d. -f1); g=\$(readlink /run/current-system 2>/dev/null | grep -o \"[a-z0-9]\\\\{7\\\\}-nixos\" | cut -c1-7 || echo \"???\"); echo \"\$d|\$g\"'" \
+      > "$TMPDIR/$host" 2>/dev/null
+  ) &
+done
+wait
+
+printf "%-14s %-19s %s\n" "HOST" "LAST UPDATE" "GEN"
+printf "%-14s %-19s %s\n" "────" "───────────" "───"
+
+sorted_hosts=$(printf '%s\n' "${!HOSTS[@]}" | sort)
+for host in $sorted_hosts; do
+  if [[ -s "$TMPDIR/$host" ]]; then
+    IFS='|' read -r ts gen < "$TMPDIR/$host"
+    printf "%-14s %-19s %s\n" "$host" "$ts" "$gen"
+  else
+    printf "%-14s %-19s %s\n" "$host" "DOWN" "—"
+  fi
+done

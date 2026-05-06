@@ -1,5 +1,10 @@
-{ pkgs, ... }:
+{ ... }:
 {
+  systems = [
+    "x86_64-linux"
+    "aarch64-linux"
+  ];
+
   # Linting and formatting checks for the flake.
   # Run with: nix flake check
   perSystem =

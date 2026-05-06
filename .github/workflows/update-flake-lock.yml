@@ -85,7 +85,7 @@ jobs:
         if: steps.changes.outputs.changed == 'true'
         run: nix flake check
 
-      - name: Build all discovered NixOS hosts
+      - name: Build x86_64 NixOS hosts
         if: steps.changes.outputs.changed == 'true'
         run: |
           mapfile -t hosts < <(
@@ -101,8 +101,19 @@ jobs:
 
           targets=()
           for host in "${hosts[@]}"; do
+            system=$(nix eval --raw ".#nixosConfigurations.${host}.config.nixpkgs.hostPlatform.system" 2>/dev/null || echo "x86_64-linux")
+            if [ "$system" != "x86_64-linux" ]; then
+              echo "Skipping ${host} (${system} - needs native builder)"
+              continue
+            fi
             targets+=(".#nixosConfigurations.${host}.config.system.build.toplevel")
           done
+
+          if [ "${#targets[@]}" -eq 0 ]; then
+            echo "No x86_64-linux nixosConfigurations found"
+            : > "$RUNNER_TEMP/toplevel-paths.txt"
+            exit 0
+          fi
 
           nix build --no-link --print-out-paths "${targets[@]}" | tee "$RUNNER_TEMP/toplevel-paths.txt"
 
@@ -111,8 +122,10 @@ jobs:
         run: |
           set -euo pipefail
 
-          mapfile -t outputs < "$RUNNER_TEMP/toplevel-paths.txt"
-          "${{ steps.niks3.outputs.path }}/bin/niks3" push "${outputs[@]}"
+          mapfile -t outputs < "$RUNNER_TEMP/toplevel-paths.txt" 2>/dev/null || true
+          if [ "${#outputs[@]}" -gt 0 ]; then
+            "${{ steps.niks3.outputs.path }}/bin/niks3" push "${outputs[@]}"
+          fi
 
       - name: Commit and push flake updates
         if: steps.changes.outputs.changed == 'true'
