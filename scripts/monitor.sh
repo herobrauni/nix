@@ -16,6 +16,7 @@ declare -A HOSTS=(
   [gigahost1]=185.125.169.63
   [hostsailor1]=185.183.98.121
   [hostc1]=2a0d:8142:0:20c::
+  [hostc3]=2a0d:8142:0:2e::
   [nuyek1]=209.205.228.80
   [onidel1]=185.232.84.12
   [onidel2]=163.61.44.148
@@ -27,25 +28,41 @@ SSH_OPTS="-o ConnectTimeout=4 -o StrictHostKeyChecking=no -o BatchMode=yes"
 TMPDIR=$(mktemp -d)
 trap 'rm -rf "$TMPDIR"' EXIT
 
+REMOTE_CMD=$(cat <<'REMOTE'
+ts=$(stat -c %y /run/current-system 2>/dev/null | cut -d. -f1 || true)
+gen=$(readlink /nix/var/nix/profiles/system 2>/dev/null | sed -n 's/.*system-\([0-9][0-9]*\)-link.*/\1/p')
+rev=$(/run/current-system/sw/bin/nixos-version --configuration-revision 2>/dev/null || true)
+if [[ "$rev" == *-dirty ]]; then
+  rev="${rev:0:12}-dirty"
+elif [[ -n "$rev" ]]; then
+  rev="${rev:0:12}"
+fi
+
+[[ -n "$ts" ]] || ts="UNKNOWN"
+[[ -n "$gen" ]] || gen="?"
+[[ -n "$rev" ]] || rev="unknown"
+
+printf "%s|%s|%s\n" "$ts" "$gen" "$rev"
+REMOTE
+)
+
 for host in "${!HOSTS[@]}"; do
   ip="${HOSTS[$host]}"
   (
-    ssh $SSH_OPTS brauni@"$ip" \
-      "bash -c 'd=\$(stat -c %y /run/current-system 2>/dev/null | cut -d. -f1); g=\$(readlink /run/current-system 2>/dev/null | grep -o \"[a-z0-9]\\\\{7\\\\}-nixos\" | cut -c1-7 || echo \"???\"); echo \"\$d|\$g\"'" \
-      > "$TMPDIR/$host" 2>/dev/null
+    ssh $SSH_OPTS brauni@"$ip" bash -s <<< "$REMOTE_CMD" > "$TMPDIR/$host" 2>/dev/null
   ) &
 done
 wait
 
-printf "%-14s %-19s %s\n" "HOST" "LAST UPDATE" "GEN"
-printf "%-14s %-19s %s\n" "────" "───────────" "───"
+printf "%-14s %-19s %-5s %s\n" "HOST" "LAST UPDATE" "GEN" "REV"
+printf "%-14s %-19s %-5s %s\n" "────" "───────────" "───" "───"
 
 sorted_hosts=$(printf '%s\n' "${!HOSTS[@]}" | sort)
 for host in $sorted_hosts; do
   if [[ -s "$TMPDIR/$host" ]]; then
-    IFS='|' read -r ts gen < "$TMPDIR/$host"
-    printf "%-14s %-19s %s\n" "$host" "$ts" "$gen"
+    IFS='|' read -r ts gen rev < "$TMPDIR/$host"
+    printf "%-14s %-19s %-5s %s\n" "$host" "$ts" "$gen" "$rev"
   else
-    printf "%-14s %-19s %s\n" "$host" "DOWN" "—"
+    printf "%-14s %-19s %-5s %s\n" "$host" "DOWN" "—" "—"
   fi
 done

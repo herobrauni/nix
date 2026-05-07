@@ -1,4 +1,12 @@
-{ lib, den, ... }:
+{
+  lib,
+  den,
+  self,
+  ...
+}:
+let
+  configurationRevision = self.rev or self.dirtyRev or null;
+in
 {
   # Global defaults — can be overridden per-host.
 
@@ -9,7 +17,10 @@
   # - define-user: creates users.users.<name> on OS + home.username/home.homeDirectory in HM
   # - hostname: sets networking.hostName from host.hostName (auto-derived from host name)
   den.default = {
-    nixos.home-manager.useUserPackages = true;
+    nixos = {
+      home-manager.useUserPackages = true;
+      system.configurationRevision = lib.mkDefault configurationRevision;
+    };
     homeManager.home.stateVersion = "25.11";
     includes = [
       den._.define-user
