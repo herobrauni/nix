@@ -5,8 +5,8 @@
   ...
 }:
 {
-  # hostc1 — IPv6-only Host-C VPS at 2a0d:8142:0:20c::.
-  den.aspects.hostc1 = {
+  # hostc3 — IPv6-only Host-C VPS at 2a0d:8142:0:2e::.
+  den.aspects.hostc3 = {
     includes = [
       den.aspects.base-server
       den.aspects.boot-limine-bios
@@ -24,6 +24,7 @@
 
       # ── Hardware ──────────────────────────────────────────────────
       boot.initrd.availableKernelModules = [
+        "ahci"
         "ata_piix"
         "sd_mod"
         "sr_mod"
@@ -111,7 +112,7 @@
 
       systemd.network.networks."10-eth0" = {
         matchConfig.Name = "eth0";
-        address = [ "2a0d:8142:0:20c::/64" ];
+        address = [ "2a0d:8142:0:2e::/64" ];
         routes = [
           {
             Gateway = "2a0d:8142::1";

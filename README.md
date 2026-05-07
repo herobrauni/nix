@@ -24,6 +24,7 @@ Aspects are composable config bundles. Hosts include them via `den.aspects.*`:
 - **`nix-core`** — shared nix settings, trusted users, substituters, cache keys
 - **`maintenance`** — nix GC/store optimisation, fstrim, unattended auto-upgrades
 - **`networkd-base`** — shared `systemd-networkd` + `resolved` baseline for server hosts
+- **`github-ipv6-proxy`** — `/etc/hosts` mappings for IPv6-only hosts to reach GitHub via Daniel Winzen's proxy
 - **`boot-limine-efi`** — shared Limine defaults for EFI hosts
 - **`boot-limine-bios`** — shared Limine defaults for BIOS hosts
 - **`impermanence`** — tmpfs root with persistent `/persist` (only for hosts that want it)
