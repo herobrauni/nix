@@ -84,6 +84,12 @@
     singleDisk.device = "/dev/sda";
     users.brauni = { };
   };
+  den.hosts.x86_64-linux.ovh-nix1 = {
+    hostName = "ovh-nix1";
+    singleDisk.device = "/dev/sda";
+    users.brauni = { };
+  };
+
   den.hosts.aarch64-linux.oracle1 = {
     hostName = "oracle1";
     singleDisk.device = "/dev/sda";

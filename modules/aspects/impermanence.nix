@@ -19,6 +19,13 @@
             "/var/lib/systemd"
             "/var/lib/acme"
             "/etc/ssh"
+            # Per-user home directories that must survive reboots
+            "/home/brauni/.ssh"
+            "/home/brauni/.config"
+            "/home/brauni/.local/share"
+            "/home/brauni/.local/state"
+            "/home/brauni/.cache"
+            "/home/brauni/.pi"
           ];
           files = [
             "/etc/machine-id"
@@ -38,6 +45,7 @@
             ".ssh"
             ".config"
             ".local/share"
+            ".local/state"
             ".cache"
           ];
           files = [

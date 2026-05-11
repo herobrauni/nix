@@ -1,82 +1,37 @@
+{ den, lib, ... }:
 {
-  den,
-  inputs,
-  lib,
-  ...
-}:
-{
-  # hostc1 — IPv6-only Host-C VPS at 2a0d:8142:0:20c::.
-  den.aspects.hostc1 = {
+  # ovh-nix1 — OVH VPS.
+  # eth0: NetBird tunnel (10.10.15.100, DHCP)
+  # eth1: OVH public (IPv6 only via SLAAC)
+  den.aspects.ovh-nix1 = {
     includes = [
       den.aspects.base-server
-      den.aspects.boot-limine-bios
+      den.aspects.single-disk-efi-vps
       den.aspects.impermanence
       den.aspects.networkd-base
-      den.aspects.github-ipv6-proxy
       den.aspects.netbird
       den.aspects.beszel-agent
-      den.aspects.swapfile
+      den.aspects.dev-tools
     ];
 
     nixos = {
-      imports = [ inputs.disko.nixosModules.disko ];
-
       system.stateVersion = "25.11";
 
       # ── Hardware ──────────────────────────────────────────────────
       boot.initrd.availableKernelModules = [
         "ata_piix"
-        "sd_mod"
-        "sr_mod"
         "uhci_hcd"
-        "virtio_blk"
         "virtio_pci"
         "virtio_scsi"
-        "vmw_pvscsi"
+        "sd_mod"
+        "ahci"
         "xen_blkfront"
+        "vmw_pvscsi"
+        "virtio_blk"
       ];
       boot.kernelModules = [ "kvm-intel" ];
 
       # ── Filesystems / bootloader ────────────────────────────────
-      boot.loader.limine = {
-        biosDevice = "/dev/sda";
-        partitionIndex = 1;
-      };
-
-      disko.devices = {
-        disk.main = {
-          type = "disk";
-          device = "/dev/sda";
-          content = {
-            type = "gpt";
-            partitions = {
-              bios = {
-                size = "4M";
-                type = "EF02";
-              };
-              boot = {
-                size = "512M";
-                type = "EF00";
-                content = {
-                  type = "filesystem";
-                  format = "vfat";
-                  mountpoint = "/boot";
-                  mountOptions = [ "umask=0077" ];
-                };
-              };
-              root = {
-                size = "100%";
-                content = {
-                  type = "filesystem";
-                  format = "ext4";
-                  mountpoint = "/";
-                };
-              };
-            };
-          };
-        };
-      };
-
       fileSystems."/" = lib.mkForce {
         fsType = "tmpfs";
         options = [
@@ -88,7 +43,6 @@
         device = "/dev/disk/by-partlabel/disk-main-root";
         fsType = "ext4";
       };
-      fileSystems."/boot".neededForBoot = true;
       fileSystems."/nix" = {
         device = "/persist/nix";
         fsType = "none";
@@ -101,7 +55,7 @@
         "console=tty0"
       ];
 
-      # ── Networking (systemd-networkd, static IPv6-only) ──────────
+      # ── Networking (systemd-networkd) ────────────────────────────
       networking.usePredictableInterfaceNames = false;
       networking.networkmanager.enable = lib.mkForce false;
 
@@ -110,23 +64,28 @@
         "/var/lib/beszel-agent"
       ];
 
+      # eth0: NetBird tunnel — DHCP
       systemd.network.networks."10-eth0" = {
         matchConfig.Name = "eth0";
-        address = [ "2a0d:8142:0:20c::/64" ];
-        routes = [
-          {
-            Gateway = "2a0d:8142::1";
-            GatewayOnLink = true;
-          }
-        ];
         networkConfig = {
+          DHCP = true;
           DNS = [
+            "1.1.1.1"
+            "8.8.8.8"
             "2606:4700:4700::1111"
             "2001:4860:4860::8888"
           ];
-          IPv6AcceptRA = false;
         };
         linkConfig.RequiredForOnline = true;
+      };
+
+      # eth1: OVH public — IPv6 via SLAAC
+      systemd.network.networks."20-eth1" = {
+        matchConfig.Name = "eth1";
+        networkConfig = {
+          IPv6AcceptRA = true;
+        };
+        linkConfig.RequiredForOnline = false;
       };
     };
   };

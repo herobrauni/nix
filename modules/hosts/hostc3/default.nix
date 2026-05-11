@@ -15,6 +15,7 @@
       den.aspects.github-ipv6-proxy
       den.aspects.netbird
       den.aspects.beszel-agent
+      den.aspects.swapfile
     ];
 
     nixos = {
