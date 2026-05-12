@@ -19,13 +19,8 @@
             "/var/lib/systemd"
             "/var/lib/acme"
             "/etc/ssh"
-            # Per-user home directories that must survive reboots
-            "/home/brauni/.ssh"
-            "/home/brauni/.config"
-            "/home/brauni/.local/share"
-            "/home/brauni/.local/state"
-            "/home/brauni/.cache"
-            "/home/brauni/.pi"
+            # Full home directory persistence
+            "/home/brauni"
           ];
           files = [
             "/etc/machine-id"
@@ -40,18 +35,9 @@
     homeManager =
       { ... }:
       {
-        home.persistence."/persist/home" = {
-          directories = [
-            ".ssh"
-            ".config"
-            ".local/share"
-            ".local/state"
-            ".cache"
-          ];
-          files = [
-            ".bash_history"
-          ];
-        };
+        # Full home directory persistence is handled at the OS level
+        # via /home/brauni in the environment.persistence block above.
+        # No separate home.persistence needed since the entire home is bind-mounted.
       };
   };
 }
