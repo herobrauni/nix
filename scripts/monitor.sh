@@ -17,6 +17,7 @@ declare -A HOSTS=(
   [hostsailor1]=185.183.98.121
   [hostc1]=2a0d:8142:0:20c::
   [hostc3]=2a0d:8142:0:2e::
+  [hostc4]=2a0d:8142:0:fc::
   [nuyek1]=209.205.228.80
   [onidel1]=185.232.84.12
   [onidel2]=163.61.44.148
