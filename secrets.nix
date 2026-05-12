@@ -41,6 +41,7 @@ let
   oracle1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKjXC3NSz8Gsjl9uYmHE/XevUM0dUpyOOsxk5j4mHxh+ root@oracle1";
   gc1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICcGHM8NWXQj22c1uBhMuAeI63De/4nqhwWto4bjIAlq root@gc1";
   ovh-nix1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP2McCzEOSn9UPUd1b4H+0TqXVwf/8h/u9fzn3veW2zX root@ovh-nix1";
+  hostc4 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKB2JJJvRODiND1yhNDLoHgaQ6sdsbYxDecWBRLUo3c1 root@hostc4";
 
   personal = sshKeys.brauni;
 
@@ -61,6 +62,7 @@ let
     hostsailor1
     hostc1
     hostc3
+    hostc4
     nuyek1
     oracle1
     ovh-nix1
