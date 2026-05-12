@@ -79,6 +79,11 @@
     singleDisk.device = "/dev/sda";
     users.brauni = { };
   };
+  den.hosts.x86_64-linux.hostc4 = {
+    hostName = "hostc4";
+    singleDisk.device = "/dev/sda";
+    users.brauni = { };
+  };
   den.hosts.x86_64-linux.nuyek1 = {
     hostName = "nuyek1";
     singleDisk.device = "/dev/sda";
