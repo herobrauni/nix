@@ -69,6 +69,14 @@
                 mode = "0400";
               };
             })
+            // (lib.optionalAttrs (builtins.pathExists ../../secrets/shared/tailscale-auth-key.age) {
+              "tailscale-auth-key" = {
+                file = ../../secrets/shared/tailscale-auth-key.age;
+                owner = "root";
+                group = "root";
+                mode = "0400";
+              };
+            })
           );
         };
       };

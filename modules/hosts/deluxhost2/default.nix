@@ -12,8 +12,8 @@
       den.aspects.boot-limine-bios
       den.aspects.impermanence
       den.aspects.networkd-base
-      den.aspects.netbird
       den.aspects.beszel-agent
+      den.aspects.tailscale
     ];
 
     nixos = {

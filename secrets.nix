@@ -73,6 +73,7 @@ in
   "secrets/shared/atuin-key.age".publicKeys = personal ++ fleetHosts;
   "secrets/shared/beszel.age".publicKeys = personal ++ fleetHosts;
   "secrets/shared/netbird-setup-key.age".publicKeys = personal ++ fleetHosts;
+  "secrets/shared/tailscale-auth-key.age".publicKeys = personal ++ fleetHosts;
 
   # Example shared secret
   # "secrets/shared/example.age".publicKeys = personal ++ fleetHosts;

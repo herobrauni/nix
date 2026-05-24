@@ -13,8 +13,8 @@
       den.aspects.impermanence
       den.aspects.networkd-base
       den.aspects.github-ipv6-proxy
-      den.aspects.netbird
       den.aspects.beszel-agent
+      den.aspects.tailscale
       den.aspects.swapfile
     ];
 
