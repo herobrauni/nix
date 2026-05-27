@@ -81,6 +81,19 @@ jobs:
           chmod 600 "$token_file"
           echo "NIKS3_AUTH_TOKEN_FILE=${token_file}" >> "$GITHUB_ENV"
 
+      - name: Auto-format (formatter versions may have changed)
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          nix shell nixpkgs#nixfmt-rfc-style nixpkgs#prettier nixpkgs#deadnix -c bash -c '
+            nixfmt $(find . -path ./.git -prune -o -type f -name "*.nix" -print)
+            prettier --write $(find . -path ./.git -prune -o -type f \( -name "*.md" -o -name "*.json" -o -name "*.yml" \) -print)
+            deadnix --fix modules/ secrets.nix || true
+            if ! git diff --quiet; then
+              git add -A
+              git commit -m "style: auto-format after flake update"
+            fi
+          '
+
       - name: Run flake checks
         if: steps.changes.outputs.changed == 'true'
         run: nix flake check
