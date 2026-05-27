@@ -333,7 +333,7 @@ Source: `modules/aspects/provides/`
 | `den._.hostname`        | `den.default.includes = [ den._.hostname ]`                         | Sets `networking.hostName` on NixOS/Darwin/WSL from `host.hostName`                                       |
 | `den._.primary-user`    | `den.aspects.alice.includes = [ den._.primary-user ]`               | Adds `wheel`/`networkmanager` groups (NixOS), sets `system.primaryUser` (Darwin), `wsl.defaultUser` (WSL) |
 | `den._.user-shell`      | `den.aspects.alice.includes = [ (den._.user-shell "fish") ]`        | Sets login shell at OS and HM levels                                                                      |
-| `den._.mutual-provider` | `den.ctx.user.includes = [ den._.mutual-provider ]`                 | Enables bidirectional host↔user config via `provides.*`                                                  |
+| `den._.mutual-provider` | `den.ctx.user.includes = [ den._.mutual-provider ]`                 | Enables bidirectional host↔user config via `provides.*`                                                   |
 | `den._.tty-autologin`   | `den.aspects.laptop.includes = [ (den._.tty-autologin "alice") ]`   | Enables TTY1 autologin (NixOS)                                                                            |
 | `den._.wsl`             | (auto-activated)                                                    | WSL activation; creates `wsl` forwarding class                                                            |
 | `den._.os-user`         | (auto-enabled)                                                      | Forwards `user` class to `users.users.<userName>` on OS                                                   |
