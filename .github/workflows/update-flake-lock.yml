@@ -90,7 +90,10 @@ jobs:
             deadnix --fix modules/ secrets.nix || true
             if ! git diff --quiet; then
               git add -A
-              git commit -m "style: auto-format after flake update"
+              git restore --staged flake.nix flake.lock 2>/dev/null || git reset HEAD -- flake.nix flake.lock
+              if ! git diff --cached --quiet; then
+                git commit -m "style: auto-format after flake update"
+              fi
             fi
           '
 
@@ -144,5 +147,7 @@ jobs:
         if: steps.changes.outputs.changed == 'true'
         run: |
           git add flake.nix flake.lock
-          git commit -m "flake: nightly input update"
+          if ! git diff --cached --quiet; then
+            git commit -m "flake: nightly input update"
+          fi
           git push origin HEAD:main
