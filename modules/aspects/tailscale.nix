@@ -33,5 +33,10 @@
       # Tailscale auth key login runs at boot. Ensure network is ready.
       systemd.services.tailscaled.after = [ "network-online.target" ];
       systemd.services.tailscaled.wants = [ "network-online.target" ];
+
+      # Persist node identity across reboots (impermanence).
+      environment.persistence."/persist".directories = [
+        "/var/lib/tailscale"
+      ];
     };
 }
