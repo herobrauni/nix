@@ -18,6 +18,7 @@ in
   # - hostname: sets networking.hostName from host.hostName (auto-derived from host name)
   den.default = {
     nixos = {
+      home-manager.backupFileExtension = "backup";
       home-manager.useUserPackages = true;
       system.configurationRevision = lib.mkDefault configurationRevision;
     };
@@ -29,5 +30,5 @@ in
   };
 
   # host <-> user mutual provider
-  den.ctx.user.includes = [ den._.mutual-provider ];
+  den.schema.user.includes = [ den._.mutual-provider ];
 }
