@@ -11,6 +11,7 @@
       den.aspects.networkd-base
       den.aspects.beszel-agent
       den.aspects.tailscale
+      # den.aspects.netbird
       den.aspects.dev-tools
     ];
 

@@ -8,6 +8,7 @@
       den.aspects.ops-tools
       den.aspects.nix-core
       den.aspects.maintenance
+      den.aspects.docker
     ];
   };
 }
