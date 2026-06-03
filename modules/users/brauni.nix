@@ -32,6 +32,7 @@ in
           export XDG_CONFIG_HOME="$HOME/.config"
           export XDG_DATA_HOME="$HOME/.local/share"
           export XDG_STATE_HOME="$HOME/.local/state"
+          export ATUIN_SYNC_ADDRESS="https://atuin.brauni.dev"
 
           ${pkgs.coreutils}/bin/mkdir -p "$XDG_DATA_HOME/atuin" "$XDG_STATE_HOME"
           export ATUIN_SESSION="$(${atuinBin} uuid)"
