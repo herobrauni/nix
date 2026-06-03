@@ -4,7 +4,7 @@
   # Hosts that include this get tmpfs root with persistent /persist.
   den.aspects.impermanence = {
     nixos =
-      { ... }:
+      { pkgs, ... }:
       {
         imports = [ inputs.impermanence.nixosModules.impermanence ];
 
@@ -25,6 +25,21 @@
           files = [
             "/etc/machine-id"
           ];
+        };
+
+        # home-manager activation runs as root and can create files/dirs
+        # owned by root inside the user's home on /persist. This service
+        # runs early in boot after the persistent filesystem is mounted,
+        # recursively fixing ownership before user sessions start.
+        systemd.services."impermanence-fix-home-perms" = {
+          description = "Fix brauni home directory permissions on persistent storage";
+          after = [ "local-fs.target" ];
+          wantedBy = [ "multi-user.target" ];
+          serviceConfig = {
+            Type = "oneshot";
+            ExecStart = "${pkgs.coreutils}/bin/chown -R brauni:users /persist/home/brauni";
+            RemainAfterExit = true;
+          };
         };
 
       };
