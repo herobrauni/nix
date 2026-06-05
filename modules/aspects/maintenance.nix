@@ -6,13 +6,17 @@
       nix = {
         gc = {
           automatic = true;
-          dates = "weekly";
-          options = "--delete-older-than 7d";
+          # Run daily – matches the nightly autoUpgrade cadence so the store
+          # never accumulates more than a handful of generations.
+          dates = "daily";
+          # Keep 3 generations (enough for rollback), remove anything older.
+          options = "--delete-older-than 3d";
         };
 
         optimise = {
           automatic = true;
-          dates = [ "weekly" ];
+          # Daily dedup keeps the floor lower between GC runs.
+          dates = [ "daily" ];
         };
       };
 

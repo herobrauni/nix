@@ -12,6 +12,14 @@
         auto-optimise-store = true;
         accept-flake-config = true;
 
+        # Don't keep .drv files as GC roots – they drag in sources/patches
+        # that are only needed at build time, wasting disk on small VPS hosts.
+        keep-derivations = false;
+
+        # Abort builds when the store filesystem drops below 1 GiB free.
+        # Prevents nix from completely filling the disk during autoUpgrade.
+        min-free = 1 * 1024 * 1024 * 1024;
+
         # Avoid stale cache misses when a host checks for a new generation before
         # CI has finished pushing that generation to Niks3.
         narinfo-cache-negative-ttl = 0;
