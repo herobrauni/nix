@@ -145,6 +145,10 @@ in
             buffer_editor = "nano";
           };
 
+          environmentVariables = {
+            NH_OS_FLAKE = "github:herobrauni/nix";
+          };
+
           shellAliases = {
             ap = "ansible-playbook";
             ce = "chezmoi edit";
