@@ -169,6 +169,55 @@ in
           };
 
           extraConfig = ''
+            # Completions: carapace first, fall back to fish
+            export def carapace-completer [spans: list<string>] {
+              carapace $spans.0 nushell ...$spans
+              | from json
+              | if ($in | default [] | any {|| $in.display? | default "" | str starts-with "ERR"}) { null } else { $in }
+              | default []
+              | each {|row|
+                let val = $row.value
+                let fixed_val = if ($val | str starts-with "~") {
+                  $val | path expand
+                } else {
+                  $val
+                }
+                $row | upsert value $fixed_val
+              }
+            }
+
+            export def fish-completer [spans: list<string>] {
+              fish --command $"complete '--do-complete=($spans | str replace --all \"'\" \"\\'\" | str join ' ')'"
+              | from tsv --flexible --noheaders --no-infer
+              | rename value description
+              | each {|row|
+                let val = $row.value
+                let need_quote = ($val | str contains --any "'" " " "[" "]" "(" ")" "\t" "'" '"' "`")
+                let fixed_val = if ($val | str starts-with "~") {
+                  let expanded = ($val | path expand)
+                  if $need_quote {
+                    $"\"($expanded | str replace --all '"' '\\"')\""
+                  } else {
+                    $expanded
+                  }
+                } else if $need_quote {
+                  $"\"($val | str replace --all '"' '\\"')\""
+                } else {
+                  $val
+                }
+                $row | upsert value $fixed_val
+              }
+            }
+
+            $env.config.completions.external = {
+              enable: true
+              max_results: 100
+              completer: {|spans|
+                let carapace = (carapace-completer $spans)
+                if ($carapace | is-not-empty) { $carapace } else { fish-completer $spans }
+              }
+            }
+
             # Atuin init (hex / pty-proxy)
             source ${
               pkgs.runCommand "atuin-hex-init.nu"
@@ -277,7 +326,7 @@ in
 
         programs.carapace = {
           enable = true;
-          enableNushellIntegration = true;
+          enableNushellIntegration = false;
         };
 
         xdg.configFile."starship.toml".source = ./starship.toml;
