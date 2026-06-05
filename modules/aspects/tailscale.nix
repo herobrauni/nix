@@ -30,13 +30,29 @@
         authKeyFile = config.age.secrets."tailscale-auth-key".path;
       };
 
-      # Tailscale auth key login runs at boot. Ensure network is ready.
-      systemd.services.tailscaled.after = [ "network-online.target" ];
-      systemd.services.tailscaled.wants = [ "network-online.target" ];
-
       # Persist node identity across reboots (impermanence).
+      # The bind mount must be active *before* tailscaled starts, otherwise
+      # the StateDirectory on tmpfs is used and the node re-registers.
       environment.persistence."/persist".directories = [
         "/var/lib/tailscale"
       ];
+
+      # Tailscale auth key login runs at boot. Ensure network is ready AND
+      # the persistent state directory is mounted before tailscale starts.
+      systemd.services.tailscaled = {
+        after = [
+          "network-online.target"
+          "var-lib-tailscale.mount"
+        ];
+        wants = [ "network-online.target" ];
+        requires = [ "var-lib-tailscale.mount" ];
+      };
+
+      # tailscaled-autoconnect runs "tailscale up --auth-key=…" and will
+      # register a new node if the state isn't available yet.
+      systemd.services.tailscaled-autoconnect = {
+        after = [ "var-lib-tailscale.mount" ];
+        requires = [ "var-lib-tailscale.mount" ];
+      };
     };
 }
