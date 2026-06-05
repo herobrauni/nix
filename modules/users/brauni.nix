@@ -165,6 +165,18 @@ in
           };
 
           extraConfig = ''
+            # Atuin init (hex / pty-proxy)
+            source ${
+              pkgs.runCommand "atuin-hex-init.nu"
+                {
+                  nativeBuildInputs = [ pkgs.writableTmpDirAsHomeHook ];
+                }
+                ''
+                  ${lib.getExe pkgs.atuin} init nu >> "$out"
+                  ${lib.getExe pkgs.atuin} pty-proxy init nu >> "$out"
+                ''
+            }
+
             # Fish-style inline autosuggestions (powered by atuin history)
             $env.config.hinter.closure = {|ctx|
               if ($ctx.line | str length) == 0 {
@@ -277,7 +289,7 @@ in
         programs.atuin = {
           enable = true;
           enableFishIntegration = true;
-          enableNushellIntegration = true;
+          enableNushellIntegration = false;
           settings = {
             auto_sync = true;
             sync_address = "https://atuin.brauni.dev";
