@@ -6,7 +6,6 @@ in
   den.aspects.brauni = {
     includes = [
       den.provides.primary-user
-      (den.provides.user-shell "fish")
       { brauni-ssh-keys.nixos.users.users.brauni.openssh.authorizedKeys.keys = sshKeys.brauni; }
     ];
 
@@ -67,9 +66,62 @@ in
           ${atuinBin} sync >/dev/null
           ${atuinBin} status >/dev/null
         '';
+
+        # Shared sync script used by both activation (first deploy) and timer (nightly).
+        dotfilesSync = pkgs.writeShellScript "dotfiles-sync" ''
+          set -euo pipefail
+
+          DOTFILES_DIR="$HOME/.local/share/dotfiles"
+          NUSHELL_SRC="$DOTFILES_DIR/dot_config/nushell"
+          NUSHELL_DST="$HOME/.config/nushell"
+
+          export HOME="''${HOME:-/home/brauni}"
+
+          if [ ! -d "$DOTFILES_DIR/.git" ]; then
+            ${pkgs.git}/bin/git clone https://github.com/herobrauni/dotfiles "$DOTFILES_DIR"
+          else
+            ${pkgs.git}/bin/git -C "$DOTFILES_DIR" pull --ff-only origin main
+          fi
+
+          mkdir -p "$NUSHELL_DST"
+          for f in "$NUSHELL_SRC"/*.nu; do
+            [ -f "$f" ] || continue
+            name=$(basename "$f")
+            # Strip chezmoi private_ prefix so config.nu sources match.
+            linkname="''${name#private_}"
+            ln -sf "$f" "$NUSHELL_DST/$linkname"
+          done
+        '';
       in
       {
-        users.users.brauni.openssh.authorizedKeys.keys = sshKeys.brauni;
+        users.users.brauni = {
+          shell = pkgs.nushell;
+          openssh.authorizedKeys.keys = sshKeys.brauni;
+        };
+
+        # Nightly dotfiles sync from GitHub.
+        systemd.services.dotfiles-sync = {
+          description = "Sync brauni dotfiles from GitHub";
+          after = [ "network-online.target" ];
+          wants = [ "network-online.target" ];
+          serviceConfig = {
+            Type = "oneshot";
+            User = "brauni";
+            WorkingDirectory = "/home/brauni";
+            ExecStart = dotfilesSync;
+          };
+        };
+
+        systemd.timers.dotfiles-sync = {
+          description = "Nightly dotfiles sync timer";
+          wantedBy = [ "timers.target" ];
+          timerConfig = {
+            OnCalendar = "daily";
+            Persistent = true;
+            RandomizedDelaySec = "30min";
+            Unit = "dotfiles-sync.service";
+          };
+        };
 
         systemd.services."atuin-auto-login" = lib.mkIf hasAtuinSecrets {
           description = "Ensure brauni is logged into Atuin";
@@ -124,6 +176,25 @@ in
           done
         '';
 
+        # Clone dotfiles repo on first deploy and symlink nushell config.
+        home.activation.syncDotfiles = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+          DOTFILES_DIR="$HOME/.local/share/dotfiles"
+          NUSHELL_DST="$HOME/.config/nushell"
+
+          if [ ! -d "$DOTFILES_DIR/.git" ]; then
+            ${pkgs.git}/bin/git clone https://github.com/herobrauni/dotfiles "$DOTFILES_DIR"
+          fi
+
+          mkdir -p "$NUSHELL_DST"
+          for f in "$DOTFILES_DIR/dot_config/nushell"/*.nu; do
+            [ -f "$f" ] || continue
+            name=$(basename "$f")
+            # Strip chezmoi private_ prefix so config.nu sources match.
+            linkname="''${name#private_}"
+            ln -sf "$f" "$NUSHELL_DST/$linkname"
+          done
+        '';
+
         home.packages = with pkgs; [
           git
           vim
@@ -147,6 +218,7 @@ in
         programs.atuin = {
           enable = true;
           enableFishIntegration = true;
+          enableNushellIntegration = true;
           settings = {
             auto_sync = true;
             sync_address = "https://atuin.brauni.dev";
