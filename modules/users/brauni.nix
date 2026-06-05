@@ -114,7 +114,7 @@ in
       }:
       {
         home.activation.removeStaleConfig = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
-          for f in fish/config.fish atuin/config.toml; do
+          for f in fish/config.fish atuin/config.toml nushell/config.nu nushell/env.nu; do
             rm -f "${config.home.homeDirectory}/.config/$f"
           done
         '';
