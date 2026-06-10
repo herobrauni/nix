@@ -61,7 +61,7 @@ jobs:
         id: niks3
         if: steps.changes.outputs.changed == 'true'
         run: |
-          path=$(nix build --no-link --print-out-paths github:Mic92/niks3/v1.6.0#niks3)
+          path=$(nix build --no-link --print-out-paths github:Mic92/niks3/v1.6.1#niks3)
           echo "path=${path}" >> "$GITHUB_OUTPUT"
 
       - name: Prepare Niks3 auth token
