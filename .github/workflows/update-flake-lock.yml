@@ -131,7 +131,7 @@ jobs:
             exit 0
           fi
 
-          nix build --no-link --print-out-paths "${targets[@]}" | tee "$RUNNER_TEMP/toplevel-paths.txt"
+          nix build --no-link --print-out-paths --max-jobs 2 "${targets[@]}" | tee "$RUNNER_TEMP/toplevel-paths.txt"
 
       - name: Push host closures to Niks3
         if: steps.changes.outputs.changed == 'true'
