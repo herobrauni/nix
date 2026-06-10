@@ -13,6 +13,18 @@
     "enabled": true,
     "schedule": ["after 1am and before 4am"]
   },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": ["^\\.github/workflows/.*\\.ya?ml$"],
+      "matchStrings": [
+        "github:Mic92\\/niks3\\/(?<currentValue>v\\d+\\.\\d+\\.\\d+)#niks3"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "Mic92/niks3",
+      "versioningTemplate": "semver"
+    }
+  ],
   "packageRules": [
     {
       "matchManagers": [
