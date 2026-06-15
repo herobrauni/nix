@@ -31,27 +31,36 @@
       };
 
       # Persist node identity across reboots (impermanence).
-      # The bind mount must be active *before* tailscaled starts, otherwise
-      # the StateDirectory on tmpfs is used and the node re-registers.
+      # The impermanence module creates a systemd mount unit (var-lib-tailscale.mount)
+      # that we depend on below to ensure state is available before tailscaled starts.
       environment.persistence."/persist".directories = [
-        "/var/lib/tailscale"
+        {
+          directory = "/var/lib/tailscale";
+          mode = "0700";
+        }
       ];
 
       # Tailscale auth key login runs at boot. Ensure network is ready AND
       # the persistent state directory is mounted before tailscale starts.
+      # The impermanence module creates mount units for each persisted directory.
       systemd.services.tailscaled = {
         after = [
           "network-online.target"
           "var-lib-tailscale.mount"
         ];
-        wants = [ "network-online.target" ];
+        wants = [
+          "network-online.target"
+          "var-lib-tailscale.mount"
+        ];
         requires = [ "var-lib-tailscale.mount" ];
       };
 
       # tailscaled-autoconnect runs "tailscale up --auth-key=…" and will
-      # register a new node if the state isn't available yet.
+      # register a new node if the state isn't available yet. Ensure the
+      # mount is ready before this runs.
       systemd.services.tailscaled-autoconnect = {
         after = [ "var-lib-tailscale.mount" ];
+        wants = [ "var-lib-tailscale.mount" ];
         requires = [ "var-lib-tailscale.mount" ];
       };
     };
