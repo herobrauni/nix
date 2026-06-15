@@ -187,7 +187,8 @@ in
             }
 
             export def fish-completer [spans: list<string>] {
-              fish --command $"complete '--do-complete=($spans | str replace --all \"'\" \"\\'\" | str join ' ')'"
+              let escaped = $spans | str replace --all "'" "\\'" | str join ' '
+              fish --command $"complete '--do-complete=($escaped)'"
               | from tsv --flexible --noheaders --no-infer
               | rename value description
               | each {|row|
