@@ -28,8 +28,23 @@
         # Poll main every night, but honour the repo's committed flake.lock.
         # The repo's scheduled flake update workflow moves inputs forward;
         # hosts only consume what already landed.
-        flake = "github:herobrauni/nix?ref=main";
+        #
+        # Use git+https:// instead of github: — the github: scheme resolves
+        # ref=main via the GitHub REST API, which rate-limits unauthenticated
+        # requests (60/hr per IP) and intermittently returns 504s during the
+        # 04:00 UTC window. git+https:// uses 'git fetch' with no API dependency.
+        flake = "git+https://github.com/herobrauni/nix.git?ref=main";
         upgrade = false;
+
+        # -L: print build logs to journal for visibility
+        # -v: verbose nixos-rebuild output
+        # --refresh: force fresh git fetch (no GitHub API involved with git+https)
+        flags = [
+          "--refresh"
+          "--flake git+https://github.com/herobrauni/nix.git?ref=main"
+          "-L"
+          "-v"
+        ];
 
         # All servers use UTC (see server-core), so this runs at 04:00 UTC.
         dates = "04:00";
