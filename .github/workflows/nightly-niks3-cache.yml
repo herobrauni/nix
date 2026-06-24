@@ -25,7 +25,7 @@ jobs:
         extra-trusted-public-keys = SIGNING_KEY:L2S1rOofwctOTq+ygU/myKHJGhuL2qu/hzAOD1q2SG4=
 
     steps:
-      - uses: actions/checkout@v6.0.3
+      - uses: actions/checkout@v7.0.0
 
       - uses: DeterminateSystems/nix-installer-action@v22
 
