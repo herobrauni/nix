@@ -27,7 +27,11 @@ declare -A HOSTS=(
   [terabit1]=165.140.203.148
 )
 
-SSH_OPTS="-o ConnectTimeout=4 -o StrictHostKeyChecking=no -o BatchMode=yes"
+SSH_OPTS=(
+  -o ConnectTimeout=4
+  -o StrictHostKeyChecking=accept-new
+  -o BatchMode=yes
+)
 TMPDIR=$(mktemp -d)
 trap 'rm -rf "$TMPDIR"' EXIT
 
@@ -62,7 +66,7 @@ REMOTE
 for host in "${!HOSTS[@]}"; do
   ip="${HOSTS[$host]}"
   (
-    ssh $SSH_OPTS brauni@"$ip" bash -s <<< "$REMOTE_CMD" > "$TMPDIR/$host" 2>/dev/null
+    ssh "${SSH_OPTS[@]}" brauni@"$ip" bash -s <<< "$REMOTE_CMD" > "$TMPDIR/$host" 2>/dev/null
   ) &
 done
 wait
