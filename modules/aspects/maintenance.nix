@@ -36,12 +36,9 @@
         flake = "git+https://github.com/herobrauni/nix.git?ref=main";
         upgrade = false;
 
-        # -L: print build logs to journal for visibility
-        # -v: verbose nixos-rebuild output
-        # --refresh: force fresh git fetch (no GitHub API involved with git+https)
+        # The NixOS auto-upgrade module adds --refresh and --flake from the
+        # `flake` option automatically. Keep only the extra logging flags here.
         flags = [
-          "--refresh"
-          "--flake git+https://github.com/herobrauni/nix.git?ref=main"
           "-L"
           "-v"
         ];
