@@ -1,5 +1,4 @@
-{ ... }:
-{
+_: {
   # Shared dev-tools aspect for development machines.
   # Installs pi-coding-agent (with nodejs for extension management)
   # and ensures ~/.pi persists on impermanence hosts.

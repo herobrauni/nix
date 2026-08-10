@@ -1,8 +1,4 @@
-{
-  den,
-  ...
-}:
-{
+_: {
   # Shared Docker aspect — enables Docker on all hosts that include it.
   den.aspects.docker = {
     # OS-level Docker daemon

@@ -87,7 +87,7 @@ jobs:
           nix shell nixpkgs#nixfmt-rfc-style nixpkgs#prettier nixpkgs#deadnix -c bash -c '
             nixfmt $(find . -path ./.git -prune -o -type f -name "*.nix" -print)
             prettier --write $(find . -path ./.git -prune -o -type f \( -name "*.md" -o -name "*.json" -o -name "*.yml" \) -print)
-            deadnix --fix modules/ secrets.nix || true
+            deadnix --edit modules/ secrets.nix
             if ! git diff --quiet; then
               git add -A
               git restore --staged flake.nix flake.lock 2>/dev/null || git reset HEAD -- flake.nix flake.lock

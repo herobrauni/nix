@@ -1,5 +1,4 @@
-{ lib, ... }:
-{
+_: {
   # Shared Tailscale client aspect.
   # All hosts join the tailnet as exit nodes.
   #
@@ -10,7 +9,6 @@
   den.aspects.tailscale.nixos =
     {
       config,
-      pkgs,
       ...
     }:
     {

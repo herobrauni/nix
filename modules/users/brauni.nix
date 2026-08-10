@@ -1,4 +1,4 @@
-{ den, lib, ... }:
+{ den, ... }:
 let
   sshKeys = import ../../lib/ssh-keys.nix;
 in
@@ -14,7 +14,6 @@ in
         config,
         lib,
         pkgs,
-        options,
         ...
       }:
       let

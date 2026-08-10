@@ -47,12 +47,10 @@
     # Home-level persistence for all users on impermanence hosts.
     # This lives here (not in the user aspect) so it's only active
     # when the impermanence HM module is available.
-    homeManager =
-      { ... }:
-      {
-        # Full home directory persistence is handled at the OS level
-        # via /home/brauni in the environment.persistence block above.
-        # No separate home.persistence needed since the entire home is bind-mounted.
-      };
+    homeManager = _: {
+      # Full home directory persistence is handled at the OS level
+      # via /home/brauni in the environment.persistence block above.
+      # No separate home.persistence needed since the entire home is bind-mounted.
+    };
   };
 }

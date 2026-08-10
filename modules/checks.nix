@@ -1,5 +1,4 @@
-{ ... }:
-{
+_: {
   systems = [
     "x86_64-linux"
     "aarch64-linux"
@@ -40,7 +39,8 @@
             }
             ''
               cd ${./..}
-              statix check modules/ secrets.nix || true
+              statix check modules/
+              statix check secrets.nix
               touch $out
             '';
 
@@ -51,7 +51,7 @@
             }
             ''
               cd ${./..}
-              deadnix --fail modules/ secrets.nix || true
+              deadnix --fail modules/ secrets.nix
               touch $out
             '';
       };

@@ -1,0 +1,2 @@
+# Dotted module option assignments are idiomatic throughout this configuration.
+disabled = ["repeated_keys"]
