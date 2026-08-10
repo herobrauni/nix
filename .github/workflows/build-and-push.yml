@@ -20,9 +20,10 @@ jobs:
         extra-substituters = http://niks3.niks3.svc.cluster.local:5751
         extra-trusted-public-keys = SIGNING_KEY:L2S1rOofwctOTq+ygU/myKHJGhuL2qu/hzAOD1q2SG4=
     steps:
-      - uses: actions/checkout@v7.0.1
+      # Pinned to immutable commit SHAs for supply-chain safety.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: DeterminateSystems/nix-installer-action@v22
+      - uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
 
       - name: Build Niks3 client
         id: niks3
