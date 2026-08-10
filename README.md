@@ -155,7 +155,7 @@ GitHub Actions builds all hosts on push to `main` and pushes closures to the Nik
 
 - Renovate currently covers GitHub Actions updates in this repo.
 - A scheduled GitHub Actions workflow refreshes the generated `flake.nix`, runs `nix flake update`, validates with `nix flake check`, builds all hosts, pushes their closures to Niks3, and commits the updated `flake.lock` to `main` daily at **03:00 UTC**.
-- Hosts check `github:herobrauni/nix?ref=main` nightly at **04:00 UTC** and apply the already-committed `flake.lock`.
+- Hosts check `git+https://github.com/herobrauni/nix.git?ref=main` nightly at **04:00 UTC** and apply the already-committed `flake.lock`.
 - `system.autoUpgrade.upgrade = false` is intentional: hosts do **not** advance flake inputs on their own; only the repo moves the lock file forward.
 - If a new generation needs a reboot because the kernel/initrd changed, the host reboots automatically inside the configured reboot window.
 - You can also trigger the lock update manually from the **Actions → Update flake.lock** workflow.
