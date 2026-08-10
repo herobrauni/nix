@@ -20,7 +20,7 @@
   # Shared destructive disko layout for EFI VPSes with a single disk.
   # Hosts opt in by setting `singleDisk.device` in `modules/hosts.nix`.
   # The ESP is 1GB to accommodate ARM64 kernel images (~64MB each).
-  den.aspects.single-disk-efi-vps = den.lib.perHost (
+  den.aspects.single-disk-efi-vps =
     { host, ... }:
     {
       includes = [ den.aspects.boot-limine-efi ];
@@ -65,6 +65,5 @@
           };
         };
       };
-    }
-  );
+    };
 }

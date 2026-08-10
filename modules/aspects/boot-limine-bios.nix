@@ -47,7 +47,7 @@
 
   # Shared destructive disko layout for BIOS VPSes with a single disk.
   # Hosts opt in by setting `singleDisk.device` in `modules/hosts.nix`.
-  den.aspects.single-disk-bios-vps = den.lib.perHost (
+  den.aspects.single-disk-bios-vps =
     { host, ... }:
     {
       includes = [ den.aspects.boot-limine-bios ];
@@ -100,6 +100,5 @@
         boot.loader.limine.biosDevice = host.singleDisk.device;
         boot.loader.limine.partitionIndex = 1;
       };
-    }
-  );
+    };
 }
