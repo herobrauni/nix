@@ -1,5 +1,4 @@
-{ lib, ... }:
-{
+_: {
   # Swap file on /persist for low-RAM VPS hosts.
   # Prevents OOM kills during nix evaluation in auto-upgrade.
   #

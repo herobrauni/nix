@@ -1,5 +1,4 @@
-{ ... }:
-{
+_: {
   # Shared Nix daemon, binary cache policy, and Nix CLI helpers.
   den.aspects.nix-core = {
     nixos = {

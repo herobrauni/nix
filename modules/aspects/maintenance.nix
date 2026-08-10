@@ -1,5 +1,4 @@
-{ ... }:
-{
+_: {
   # Shared maintenance policy for unattended servers.
   den.aspects.maintenance = {
     nixos = {

@@ -1,5 +1,4 @@
-{ ... }:
-{
+_: {
   # IPv6-only hosts cannot reach GitHub's IPv4-only endpoints directly.
   # Daniel Winzen's proxy publishes IPv6 addresses for the GitHub hostnames
   # below, letting normal github:/https://github.com URLs keep working.

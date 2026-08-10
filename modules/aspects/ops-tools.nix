@@ -1,5 +1,4 @@
-{ ... }:
-{
+_: {
   # Shared shell support and admin tooling for headless servers.
   den.aspects.ops-tools = {
     nixos =

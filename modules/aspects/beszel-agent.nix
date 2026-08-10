@@ -1,5 +1,4 @@
-{ den, lib, ... }:
-{
+_: {
   den.aspects.beszel-agent.nixos =
     { config, ... }:
     {
