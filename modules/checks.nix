@@ -54,6 +54,17 @@
               deadnix --fail modules/ secrets.nix || true
               touch $out
             '';
+
+        shellcheck =
+          pkgs.runCommand "shellcheck-check"
+            {
+              nativeBuildInputs = [ pkgs.shellcheck ];
+            }
+            ''
+              cd ${./..}
+              shellcheck scripts/*.sh
+              touch $out
+            '';
       };
     };
 }
