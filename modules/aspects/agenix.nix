@@ -19,7 +19,7 @@
   # All hosts get the agenix NixOS module and decrypt with the host SSH key.
   den.aspects.base-server.includes = [ den.aspects.agenix ];
 
-  den.aspects.agenix = den.lib.perHost (
+  den.aspects.agenix =
     { host, ... }:
     {
       nixos = {
@@ -80,6 +80,5 @@
           );
         };
       };
-    }
-  );
+    };
 }
